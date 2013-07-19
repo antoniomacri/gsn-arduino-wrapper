@@ -134,33 +134,23 @@ public class ArduinoWrapper extends AbstractWrapper
 
             // read value from the specified pin
             int value;
-            synchronized (lock) {
-                if (arduino == null) {
-                    // isActive() is set to return false after dispose(), but checking
-                    // it doesn't guarantee this code being called before disposition.
-                    // We must use a lock and check if arduino is set to null.
-                    logger.debug("Tried to read data after Arduino disposition.");
-                    // Note that this does not prevent the wrapper from reading data
-                    // from a sensor after the associated wrapper instance is marked as
-                    // inactive (postStreamElement below might return false).
-                    return;
-                }
-
-                if (mode == Mode.DIGITAL) {
-                    value = arduino.digitalRead(pin);
-                }
-                else {
-                    value = arduino.analogRead(pin);
-                }
+            if (mode == Mode.DIGITAL) {
+                value = arduino.digitalRead(pin);
+            }
+            else {
+                value = arduino.analogRead(pin);
             }
 
             // post the data to GSN
             StreamElement se = new StreamElement(getOutputFormat(), new Serializable[] {
                 value
             }, System.currentTimeMillis());
-            if (postStreamElement(se) == false) {
-                logger.debug("Data discarded (vsensor unloaded?).");
-            }
+            postStreamElement(se);
+            // Note that checking isActive() does not prevent from reading data from a sensor
+            // after the associated wrapper instance is marked as inactive (postStreamElement
+            // might return false).
+            // We do not use any lock, since analogRead/digitalRead just read values from
+            // memory
         }
     }
 
@@ -189,7 +179,9 @@ public class ArduinoWrapper extends AbstractWrapper
             if (activeThreads == 0) {
                 String iname = arduino.getSerialName();
                 arduino.dispose();
-                arduino = null;
+                // Do not set arduino=null: it may happen that the run method will try to read
+                // data after the dispose method is called. We avoid using any lock while
+                // reading: it will be just read an old value from memory
                 logger.debug("Arduino disposed on port " + iname + ".");
             }
             else {
