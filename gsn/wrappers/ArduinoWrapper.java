@@ -164,11 +164,6 @@ public class ArduinoWrapper extends AbstractWrapper
         return "Arduino Wrapper";
     }
 
-    public void finalize()
-    {
-        logger.debug("finalize() ignored.");
-    }
-
     @Override
     public void dispose()
     {
