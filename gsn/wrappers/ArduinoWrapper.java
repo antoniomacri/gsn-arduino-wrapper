@@ -25,7 +25,7 @@ public class ArduinoWrapper extends AbstractWrapper
     }
 
     private enum Trigger {
-        TIME, DATA
+        TIMER, DATA
     }
 
     private final transient Logger logger = Logger.getLogger(ArduinoWrapper.class);
@@ -95,7 +95,7 @@ public class ArduinoWrapper extends AbstractWrapper
         pin = params.getPredicateValueAsIntWithException("pin");
         logger.info("Pin: " + pin + ".");
 
-        String value = params.getPredicateValueWithDefault("trigger", "time");
+        String value = params.getPredicateValueWithDefault("trigger", Trigger.TIMER.name());
         trigger = getEnumFromString(Trigger.class, value, "trigger");
         logger.info("Trigger: " + trigger + ".");
 
@@ -110,7 +110,8 @@ public class ArduinoWrapper extends AbstractWrapper
             }
         }
 
-        value = params.getPredicateValueWithDefault("mode", trigger == Trigger.DATA ? "digital" : "analog");
+        value = params.getPredicateValueWithDefault("mode",
+                (trigger == Trigger.DATA ? Mode.DIGITAL : Mode.ANALOG).name());
         mode = getEnumFromString(Mode.class, value, "mode");
         logger.info("Mode: " + mode + ".");
 
