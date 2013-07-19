@@ -37,6 +37,7 @@ public class ArduinoWrapper extends AbstractWrapper
     private Trigger trigger;
     private int pin;
 
+    @Override
     public boolean initialize()
     {
         logger.setLevel(Level.ALL);
@@ -123,6 +124,7 @@ public class ArduinoWrapper extends AbstractWrapper
         return true;
     }
 
+    @Override
     public void run()
     {
         while (isActive()) {
@@ -155,11 +157,13 @@ public class ArduinoWrapper extends AbstractWrapper
         }
     }
 
+    @Override
     public DataField[] getOutputFormat()
     {
         return collection;
     }
 
+    @Override
     public String getWrapperName()
     {
         return "Arduino Wrapper";
