@@ -94,11 +94,9 @@ public class ArduinoWrapper extends AbstractWrapper
     private boolean readParams(AddressBean params)
     {
         pin = params.getPredicateValueAsIntWithException("pin");
-        logger.info("Pin: " + pin + ".");
 
         String value = params.getPredicateValueWithDefault("trigger", Trigger.TIMER.name());
         trigger = getEnumFromString(Trigger.class, value, "trigger");
-        logger.info("Trigger: " + trigger + ".");
 
         value = params.getPredicateValue("rate");
         if (value != null) {
@@ -107,14 +105,12 @@ public class ArduinoWrapper extends AbstractWrapper
             }
             else {
                 rate = Integer.parseInt(value);
-                logger.info("Sampling rate: " + value + " msec.");
             }
         }
 
         value = params.getPredicateValueWithDefault("mode",
                 (trigger == Trigger.DATA ? Mode.DIGITAL : Mode.ANALOG).name());
         mode = getEnumFromString(Mode.class, value, "mode");
-        logger.info("Mode: " + mode + ".");
 
         if (trigger == Trigger.DATA && mode != Mode.DIGITAL) {
             logger.error("Invalid parameter: 'trigger=data' is supported only with 'mode=digital'.");
