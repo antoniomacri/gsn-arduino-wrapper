@@ -1,4 +1,4 @@
-package gsn.wrappers;
+package gsn.wrappers.arduino;
 
 import java.io.Serializable;
 import org.apache.log4j.Level;
@@ -9,6 +9,7 @@ import com.shigeodayo.javarduino.Arduino;
 import gsn.beans.AddressBean;
 import gsn.beans.DataField;
 import gsn.beans.StreamElement;
+import gsn.wrappers.AbstractWrapper;
 
 /**
  * This wrapper allows to read data from various sensors on an Arduino board.

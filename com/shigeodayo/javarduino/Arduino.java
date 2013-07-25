@@ -17,6 +17,8 @@
 */
 package com.shigeodayo.javarduino;
 
+import gsn.wrappers.arduino.Serial;
+
 
 public class Arduino {
 
