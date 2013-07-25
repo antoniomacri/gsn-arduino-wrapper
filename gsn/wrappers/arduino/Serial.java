@@ -41,18 +41,21 @@ import java.lang.reflect.*;
  * @generate Serial.xml
  * @webref net
  * @usage application
+ *
+ *        DEFAULT: 9600 baud, 8 data bits (SerialPort.DATABITS_8), 1 stop bit (SerialPort.STOPBITS_1), no parity
+ *        (SerialPort.PARITY_NONE)
  */
 public class Serial implements SerialPortEventListener
 {
+    private static final int DEFAULT_RATE = 9600;
+    private static final int DEFAULT_PARITY = SerialPort.PARITY_NONE;
+    private static final int DEFAULT_DATABITS = SerialPort.DATABITS_8;
+    private static final int DEFAULT_STOPBITS = SerialPort.STOPBITS_1;
+
     private Object proxy;
     private Method serialEventMethod;
 
     private SerialPort port;
-
-    private int rate;
-    private int parity;
-    private int databits;
-    private int stopbits;
 
     private InputStream input;
     private OutputStream output;
@@ -65,64 +68,54 @@ public class Serial implements SerialPortEventListener
     private boolean bufferUntil;
     private byte bufferUntilByte;
 
-    // defaults
-
-    static String dname = "COM1";
-    static int drate = 9600;
-    static char dparity = 'N';
-    static int ddatabits = 8;
-    static float dstopbits = 1;
-
-    public void setProperties(Properties props)
-    {
-        dname = props.getProperty("serial.port", dname);
-        drate = Integer.parseInt(props.getProperty("serial.rate", "9600"));
-        dparity = props.getProperty("serial.parity", "N").charAt(0);
-        ddatabits = Integer.parseInt(props.getProperty("serial.databits", "8"));
-        dstopbits = new Float(props.getProperty("serial.stopbits", "1")).floatValue();
-    }
-
     /**
-     * @param parent
-     *            typically use "this"
-     */
-    public Serial(Object proxy)
-    {
-        this(proxy, dname, drate, dparity, ddatabits, dstopbits);
-    }
-
-    /**
-     * @param irate
-     *            9600 is the default
-     */
-    public Serial(Object proxy, int irate)
-    {
-        this(proxy, dname, irate, dparity, ddatabits, dstopbits);
-    }
-
-    /**
+     * Creates an instance of the Serial class bound to the specified serial port, using the given
+     * object as a listener.
+     *
+     * @param proxy
+     *            the object to be used as a listener
      * @param iname
-     *            name of the port (COM1 is the default)
+     *            the name of the serial port to use (for example, "COM1" or "/dev/ttyACM0")
      */
-    public Serial(Object proxy, String iname, int irate)
-    {
-        this(proxy, iname, irate, dparity, ddatabits, dstopbits);
-    }
-
     public Serial(Object proxy, String iname)
     {
-        this(proxy, iname, drate, dparity, ddatabits, dstopbits);
+        this(proxy, iname, DEFAULT_RATE, DEFAULT_PARITY, DEFAULT_DATABITS, DEFAULT_STOPBITS);
     }
 
     /**
-     * @param iparity
-     *            'N' for none, 'E' for even, 'O' for odd ('N' is the default)
-     * @param idatabits
-     *            8 is the default
-     * @param istopbits
-     *            1.0, 1.5, or 2.0 (1.0 is the default)
+     * Creates an instance of the Serial class bound to the specified serial port, using the given
+     * object as a listener.
+     *
+     * @param proxy
+     *            the object to be used as a listener
+     * @param iname
+     *            the name of the serial port to use (for example, "COM1" or "/dev/ttyACM0")
+     * @param baudrate
+     *            the baud rate to use (for example, 9600 or 115200)
      */
-    public Serial(Object proxy, String iname, int irate, char iparity, int idatabits, float istopbits)
+    public Serial(Object proxy, String iname, int baudrate)
+    {
+        this(proxy, iname, baudrate, DEFAULT_DATABITS, DEFAULT_STOPBITS, DEFAULT_PARITY);
+    }
+
+    /**
+     * Creates an instance of the Serial class bound to the specified serial port, using the given
+     * object as a listener.
+     *
+     * @param proxy
+     *            the object to be used as a listener
+     * @param iname
+     *            the name of the serial port to use (for example, "COM1" or "/dev/ttyACM0")
+     * @param baudrate
+     *            the baud rate to use (for example, 9600 or 115200)
+     * @param dataBits
+     *            the amount of bits transferred at a time (for example, SerialPort.DATABITS_8)
+     * @param stopBits
+     *            the type of stop bits to use (for example, SerialPort.STOPBITS_1)
+     * @param parity
+     *            the parity method to use (for example, SerialPort.PARITY_NONE)
+     */
+    public Serial(Object proxy, String iname, int baudrate, int dataBits, int stopBits, int parity)
     {
         this.proxy = proxy;
 
@@ -141,18 +134,6 @@ public class Serial implements SerialPortEventListener
             }
         }
 
-        this.rate = irate;
-
-        parity = SerialPort.PARITY_NONE;
-        if (iparity == 'E') parity = SerialPort.PARITY_EVEN;
-        if (iparity == 'O') parity = SerialPort.PARITY_ODD;
-
-        this.databits = idatabits;
-
-        stopbits = SerialPort.STOPBITS_1;
-        if (istopbits == 1.5f) stopbits = SerialPort.STOPBITS_1_5;
-        if (istopbits == 2) stopbits = SerialPort.STOPBITS_2;
-
         try {
             Enumeration<?> portList = CommPortIdentifier.getPortIdentifiers();
             while (portList.hasMoreElements()) {
@@ -163,7 +144,7 @@ public class Serial implements SerialPortEventListener
                         port = (SerialPort) portId.open("serial madness", 2000);
                         input = port.getInputStream();
                         output = port.getOutputStream();
-                        port.setSerialPortParams(rate, databits, stopbits, parity);
+                        port.setSerialPortParams(baudrate, dataBits, stopBits, parity);
                         port.addEventListener(this);
                         port.notifyOnDataAvailable(true);
                     }
