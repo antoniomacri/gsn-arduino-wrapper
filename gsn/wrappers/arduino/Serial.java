@@ -44,26 +44,26 @@ import java.lang.reflect.*;
  */
 public class Serial implements SerialPortEventListener
 {
-    Object proxy;
-    Method serialEventMethod;
+    private Object proxy;
+    private Method serialEventMethod;
 
-    public SerialPort port;
+    private SerialPort port;
 
-    public int rate;
-    public int parity;
-    public int databits;
-    public int stopbits;
+    private int rate;
+    private int parity;
+    private int databits;
+    private int stopbits;
 
-    public InputStream input;
-    public OutputStream output;
+    private InputStream input;
+    private OutputStream output;
 
-    byte buffer[] = new byte[32768];
-    int bufferIndex;
-    int bufferLast;
+    private byte buffer[] = new byte[32768];
+    private int bufferIndex;
+    private int bufferLast;
 
-    int bufferSize = 1; // how big before reset or event firing
-    boolean bufferUntil;
-    byte bufferUntilByte;
+    private int bufferSize = 1; // how big before reset or event firing
+    private boolean bufferUntil;
+    private byte bufferUntilByte;
 
     // defaults
 
