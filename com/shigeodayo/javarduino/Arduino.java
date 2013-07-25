@@ -17,6 +17,14 @@
 */
 package com.shigeodayo.javarduino;
 
+import java.io.IOException;
+import java.util.TooManyListenersException;
+
+import javax.sound.sampled.LineUnavailableException;
+
+import gnu.io.NoSuchPortException;
+import gnu.io.PortInUseException;
+import gnu.io.UnsupportedCommOperationException;
 import gsn.wrappers.arduino.Serial;
 
 
@@ -72,10 +80,16 @@ public class Arduino {
         }
     }
 
-    public Arduino(String iname){
+    public Arduino(String iname)
+        throws NoSuchPortException, PortInUseException, IOException, LineUnavailableException,
+        UnsupportedCommOperationException, TooManyListenersException
+    {
         this(iname, 57600);
     }
-    public Arduino(String iname, int irate){
+    public Arduino(String iname, int irate)
+        throws NoSuchPortException, PortInUseException, IOException, LineUnavailableException,
+        UnsupportedCommOperationException, TooManyListenersException
+    {
         serialProxy=new SerialProxy();
         serial=new Serial(serialProxy, iname, irate);
 

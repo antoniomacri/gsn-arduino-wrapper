@@ -37,6 +37,8 @@ import java.io.*;
 import java.util.*;
 import java.lang.reflect.*;
 
+import javax.sound.sampled.LineUnavailableException;
+
 /**
  * @generate Serial.xml
  * @webref net
@@ -76,8 +78,21 @@ public class Serial implements SerialPortEventListener
      *            the object to be used as a listener
      * @param iname
      *            the name of the serial port to use (for example, "COM1" or "/dev/ttyACM0")
+     * @throws NoSuchPortException
+     *             the specified port does not exist
+     * @throws PortInUseException
+     *             the specified port is already in use by some other application
+     * @throws IOException
+     *             couldn't retrieve the input or output stream associated with the port
+     * @throws LineUnavailableException
+     *             the specified port does not support receiving or sending data
+     * @throws UnsupportedCommOperationException
+     *             the specified parameters are not valid
+     * @throws TooManyListenersException
+     *             the serial port already has a registered listener
      */
-    public Serial(Object proxy, String iname)
+    public Serial(Object proxy, String iname) throws NoSuchPortException, PortInUseException, IOException,
+            LineUnavailableException, UnsupportedCommOperationException, TooManyListenersException
     {
         this(proxy, iname, DEFAULT_RATE, DEFAULT_PARITY, DEFAULT_DATABITS, DEFAULT_STOPBITS);
     }
@@ -92,8 +107,21 @@ public class Serial implements SerialPortEventListener
      *            the name of the serial port to use (for example, "COM1" or "/dev/ttyACM0")
      * @param baudrate
      *            the baud rate to use (for example, 9600 or 115200)
+     * @throws NoSuchPortException
+     *             the specified port does not exist
+     * @throws PortInUseException
+     *             the specified port is already in use by some other application
+     * @throws IOException
+     *             couldn't retrieve the input or output stream associated with the port
+     * @throws LineUnavailableException
+     *             the specified port does not support receiving or sending data
+     * @throws UnsupportedCommOperationException
+     *             the specified parameters are not valid
+     * @throws TooManyListenersException
+     *             the serial port already has a registered listener
      */
-    public Serial(Object proxy, String iname, int baudrate)
+    public Serial(Object proxy, String iname, int baudrate) throws NoSuchPortException, PortInUseException,
+            IOException, LineUnavailableException, UnsupportedCommOperationException, TooManyListenersException
     {
         this(proxy, iname, baudrate, DEFAULT_DATABITS, DEFAULT_STOPBITS, DEFAULT_PARITY);
     }
@@ -114,11 +142,23 @@ public class Serial implements SerialPortEventListener
      *            the type of stop bits to use (for example, SerialPort.STOPBITS_1)
      * @param parity
      *            the parity method to use (for example, SerialPort.PARITY_NONE)
+     * @throws NoSuchPortException
+     *             the specified port does not exist
+     * @throws PortInUseException
+     *             the specified port is already in use by some other application
+     * @throws IOException
+     *             couldn't retrieve the input or output stream associated with the port
+     * @throws LineUnavailableException
+     *             the specified port does not support receiving or sending data
+     * @throws UnsupportedCommOperationException
+     *             the specified parameters are not valid
+     * @throws TooManyListenersException
+     *             the serial port already has a registered listener
      */
     public Serial(Object proxy, String iname, int baudrate, int dataBits, int stopBits, int parity)
+            throws NoSuchPortException, PortInUseException, IOException, LineUnavailableException,
+            UnsupportedCommOperationException, TooManyListenersException
     {
-        this.proxy = proxy;
-
         // On OS X, make sure the lock folder needed by RXTX is present
         if (System.getProperty("os.name").indexOf("Mac") != -1) {
             File lockFolder = new File("/var/lock");
@@ -134,30 +174,40 @@ public class Serial implements SerialPortEventListener
             }
         }
 
-        try {
-            Enumeration<?> portList = CommPortIdentifier.getPortIdentifiers();
-            while (portList.hasMoreElements()) {
-                CommPortIdentifier portId = (CommPortIdentifier) portList.nextElement();
+        // The following calls may throw (in turn) NoSuchPortException or PortInUseException:
+        // just rethrow
+        CommPortIdentifier portId = CommPortIdentifier.getPortIdentifier(iname);
+        port = (SerialPort) portId.open(this.getClass().getName(), 2000);
 
-                if (portId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
-                    if (portId.getName().equals(iname)) {
-                        port = (SerialPort) portId.open("serial madness", 2000);
-                        input = port.getInputStream();
-                        output = port.getOutputStream();
-                        port.setSerialPortParams(baudrate, dataBits, stopBits, parity);
-                        port.addEventListener(this);
-                        port.notifyOnDataAvailable(true);
-                    }
-                }
+        try {
+            // getInputStream() and getOutputStream() may throw an IOException
+            input = port.getInputStream();
+            output = port.getOutputStream();
+            if (input == null) {
+                throw new LineUnavailableException(
+                        "The specified port is unidirectional and doesn't support receiving data.");
+            }
+            if (output == null) {
+                throw new LineUnavailableException(
+                        "The specified port is unidirectional and doesn't support sending data.");
             }
 
+            // setSerialPortParams() may throw UnsupportedCommOperationException
+            port.setSerialPortParams(baudrate, dataBits, stopBits, parity);
+
+            // addEventListener() may throw TooManyListenersException
+            this.proxy = proxy;
+            port.addEventListener(this);
+            port.notifyOnDataAvailable(true);
         }
         catch (Exception e) {
-            errorMessage("<init>", e);
-            // e.printStackTrace();
-            port = null;
+            if (port != null) {
+                port.close();
+                port = null;
+            }
             input = null;
             output = null;
+            throw e;
         }
 
         // reflection to check whether host applet has a call for
@@ -168,7 +218,10 @@ public class Serial implements SerialPortEventListener
                 Serial.class
             });
         }
-        catch (Exception e) {
+        catch (SecurityException e) {
+            // no such method, or an error.. which is fine, just ignore
+        }
+        catch (NoSuchMethodException e) {
             // no such method, or an error.. which is fine, just ignore
         }
     }
