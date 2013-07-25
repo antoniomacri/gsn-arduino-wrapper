@@ -253,6 +253,11 @@ public class Serial implements SerialPortEventListener
         }
     }
 
+    public String getName()
+    {
+        return port.getName();
+    }
+
     /**
      * Set the DTR line. Addition from Tom Hulbert.
      */
