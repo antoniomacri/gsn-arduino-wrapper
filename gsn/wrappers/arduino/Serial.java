@@ -31,8 +31,6 @@
 
 package gsn.wrappers.arduino;
 
-import processing.core.*;
-
 import gnu.io.*;
 
 import java.io.*;
@@ -46,8 +44,7 @@ import java.lang.reflect.*;
  */
 public class Serial implements SerialPortEventListener
 {
-
-    PApplet parent;
+    Object proxy;
     Method serialEventMethod;
 
     // properties can be passed in for default values
@@ -99,32 +96,32 @@ public class Serial implements SerialPortEventListener
      * @param parent
      *            typically use "this"
      */
-    public Serial(PApplet parent)
+    public Serial(Object proxy)
     {
-        this(parent, dname, drate, dparity, ddatabits, dstopbits);
+        this(proxy, dname, drate, dparity, ddatabits, dstopbits);
     }
 
     /**
      * @param irate
      *            9600 is the default
      */
-    public Serial(PApplet parent, int irate)
+    public Serial(Object proxy, int irate)
     {
-        this(parent, dname, irate, dparity, ddatabits, dstopbits);
+        this(proxy, dname, irate, dparity, ddatabits, dstopbits);
     }
 
     /**
      * @param iname
      *            name of the port (COM1 is the default)
      */
-    public Serial(PApplet parent, String iname, int irate)
+    public Serial(Object proxy, String iname, int irate)
     {
-        this(parent, iname, irate, dparity, ddatabits, dstopbits);
+        this(proxy, iname, irate, dparity, ddatabits, dstopbits);
     }
 
-    public Serial(PApplet parent, String iname)
+    public Serial(Object proxy, String iname)
     {
-        this(parent, iname, drate, dparity, ddatabits, dstopbits);
+        this(proxy, iname, drate, dparity, ddatabits, dstopbits);
     }
 
     /**
@@ -135,14 +132,14 @@ public class Serial implements SerialPortEventListener
      * @param istopbits
      *            1.0, 1.5, or 2.0 (1.0 is the default)
      */
-    public Serial(PApplet parent, String iname, int irate, char iparity, int idatabits, float istopbits)
+    public Serial(Object proxy, String iname, int irate, char iparity, int idatabits, float istopbits)
     {
         // if (port != null) port.close();
-        this.parent = parent;
+        this.proxy = proxy;
         // parent.attach(this);
 
         // On OS X, make sure the lock folder needed by RXTX is present
-        if (PApplet.platform == PConstants.MACOSX) {
+        if (System.getProperty("os.name").indexOf("Mac") != -1) {
             File lockFolder = new File("/var/lock");
             if (!lockFolder.exists() || !lockFolder.canRead() || !lockFolder.canWrite() || !lockFolder.canExecute()) {
                 final String MESSAGE = "To use the serial library, first open\n"
@@ -197,13 +194,11 @@ public class Serial implements SerialPortEventListener
             output = null;
         }
 
-        parent.registerMethod("dispose", this);
-
         // reflection to check whether host applet has a call for
         // public void serialEvent(processing.serial.Serial)
         // which would be called each time an event comes in
         try {
-            serialEventMethod = parent.getClass().getMethod("serialEvent", new Class[] {
+            serialEventMethod = proxy.getClass().getMethod("serialEvent", new Class[] {
                 Serial.class
             });
         }
@@ -289,7 +284,7 @@ public class Serial implements SerialPortEventListener
                             if ((bufferUntil && (buffer[bufferLast - 1] == bufferUntilByte))
                                     || (!bufferUntil && ((bufferLast - bufferIndex) >= bufferSize))) {
                                 try {
-                                    serialEventMethod.invoke(parent, new Object[] {
+                                    serialEventMethod.invoke(proxy, new Object[] {
                                         this
                                     });
                                 }
