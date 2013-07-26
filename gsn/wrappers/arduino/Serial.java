@@ -35,7 +35,6 @@ import gnu.io.*;
 
 import java.io.*;
 import java.util.*;
-import java.lang.reflect.*;
 
 import javax.sound.sampled.LineUnavailableException;
 
@@ -54,8 +53,7 @@ public class Serial implements SerialPortEventListener
     private static final int DEFAULT_DATABITS = SerialPort.DATABITS_8;
     private static final int DEFAULT_STOPBITS = SerialPort.STOPBITS_1;
 
-    private Object proxy;
-    private Method serialEventMethod;
+    private SerialPortEventListener listener;
 
     private SerialPort port;
 
@@ -74,8 +72,8 @@ public class Serial implements SerialPortEventListener
      * Creates an instance of the Serial class bound to the specified serial port, using the given
      * object as a listener.
      *
-     * @param proxy
-     *            the object to be used as a listener
+     * @param listener
+     *            the SerialPortEventListener which gets notified whenever new data is available
      * @param iname
      *            the name of the serial port to use (for example, "COM1" or "/dev/ttyACM0")
      * @throws NoSuchPortException
@@ -92,18 +90,18 @@ public class Serial implements SerialPortEventListener
      * @throws TooManyListenersException
      *             the serial port already has a registered listener
      */
-    public Serial(Object proxy, String iname) throws NoSuchPortException, PortInUseException, IOException,
-            LineUnavailableException, UnsupportedCommOperationException, TooManyListenersException
+    public Serial(SerialPortEventListener listener, String iname) throws NoSuchPortException, PortInUseException,
+            IOException, LineUnavailableException, UnsupportedCommOperationException, TooManyListenersException
     {
-        this(proxy, iname, DEFAULT_RATE, DEFAULT_PARITY, DEFAULT_DATABITS, DEFAULT_STOPBITS);
+        this(listener, iname, DEFAULT_RATE, DEFAULT_PARITY, DEFAULT_DATABITS, DEFAULT_STOPBITS);
     }
 
     /**
      * Creates an instance of the Serial class bound to the specified serial port, using the given
      * object as a listener.
      *
-     * @param proxy
-     *            the object to be used as a listener
+     * @param listener
+     *            the SerialPortEventListener which gets notified whenever new data is available
      * @param iname
      *            the name of the serial port to use (for example, "COM1" or "/dev/ttyACM0")
      * @param baudrate
@@ -122,18 +120,19 @@ public class Serial implements SerialPortEventListener
      * @throws TooManyListenersException
      *             the serial port already has a registered listener
      */
-    public Serial(Object proxy, String iname, int baudrate) throws NoSuchPortException, PortInUseException,
-            IOException, LineUnavailableException, UnsupportedCommOperationException, TooManyListenersException
+    public Serial(SerialPortEventListener listener, String iname, int baudrate) throws NoSuchPortException,
+            PortInUseException, IOException, LineUnavailableException, UnsupportedCommOperationException,
+            TooManyListenersException
     {
-        this(proxy, iname, baudrate, DEFAULT_DATABITS, DEFAULT_STOPBITS, DEFAULT_PARITY);
+        this(listener, iname, baudrate, DEFAULT_DATABITS, DEFAULT_STOPBITS, DEFAULT_PARITY);
     }
 
     /**
      * Creates an instance of the Serial class bound to the specified serial port, using the given
      * object as a listener.
      *
-     * @param proxy
-     *            the object to be used as a listener
+     * @param listener
+     *            the SerialPortEventListener which gets notified whenever new data is available
      * @param iname
      *            the name of the serial port to use (for example, "COM1" or "/dev/ttyACM0")
      * @param baudrate
@@ -158,7 +157,7 @@ public class Serial implements SerialPortEventListener
      * @throws TooManyListenersException
      *             the serial port already has a registered listener
      */
-    public Serial(Object proxy, String iname, int baudrate, int dataBits, int stopBits, int parity)
+    public Serial(SerialPortEventListener listener, String iname, int baudrate, int dataBits, int stopBits, int parity)
             throws NoSuchPortException, PortInUseException, IOException, LineUnavailableException,
             UnsupportedCommOperationException, TooManyListenersException
     {
@@ -184,7 +183,7 @@ public class Serial implements SerialPortEventListener
             port.setSerialPortParams(baudrate, dataBits, stopBits, parity);
 
             // addEventListener() may throw TooManyListenersException
-            this.proxy = proxy;
+            this.listener = listener; // Better to set the listener before addEventListener()
             port.addEventListener(this);
             port.notifyOnDataAvailable(true);
         }
@@ -196,21 +195,6 @@ public class Serial implements SerialPortEventListener
             input = null;
             output = null;
             throw e;
-        }
-
-        // reflection to check whether host applet has a call for
-        // public void serialEvent(processing.serial.Serial)
-        // which would be called each time an event comes in
-        try {
-            serialEventMethod = proxy.getClass().getMethod("serialEvent", new Class[] {
-                Serial.class
-            });
-        }
-        catch (SecurityException e) {
-            // no such method, or an error.. which is fine, just ignore
-        }
-        catch (NoSuchMethodException e) {
-            // no such method, or an error.. which is fine, just ignore
         }
     }
 
@@ -292,20 +276,10 @@ public class Serial implements SerialPortEventListener
                             buffer = temp;
                         }
                         buffer[bufferLast++] = (byte) input.read();
-                        if (serialEventMethod != null) {
+                        if (listener != null) {
                             if ((bufferUntil && (buffer[bufferLast - 1] == bufferUntilByte))
                                     || (!bufferUntil && ((bufferLast - bufferIndex) >= bufferSize))) {
-                                try {
-                                    serialEventMethod.invoke(proxy, new Object[] {
-                                        this
-                                    });
-                                }
-                                catch (Exception e) {
-                                    String msg = "error, disabling serialEvent() for " + port;
-                                    System.err.println(msg);
-                                    e.printStackTrace();
-                                    serialEventMethod = null;
-                                }
+                                listener.serialEvent(serialEvent);
                             }
                         }
                     }

@@ -24,6 +24,8 @@ import javax.sound.sampled.LineUnavailableException;
 
 import gnu.io.NoSuchPortException;
 import gnu.io.PortInUseException;
+import gnu.io.SerialPortEvent;
+import gnu.io.SerialPortEventListener;
 import gnu.io.UnsupportedCommOperationException;
 import gsn.wrappers.arduino.Serial;
 
@@ -73,8 +75,9 @@ public class Arduino {
     private int minorVersion=0;
 
 
-    public class SerialProxy{
-        public void serialEvent(Serial which){
+    public class SerialProxy implements SerialPortEventListener {
+        @Override
+        public void serialEvent(SerialPortEvent arg) {
             while(available()>0)
                 processInput();
         }
