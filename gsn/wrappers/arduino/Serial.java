@@ -81,7 +81,8 @@ public class Serial implements SerialPortEventListener
      * @throws NoSuchPortException
      *             the specified port does not exist
      * @throws PortInUseException
-     *             the specified port is already in use by some other application
+     *             the specified port is already in use by some other application -or- the specified
+     *             port cannot be locked (insufficient permissions on /var/lock)
      * @throws IOException
      *             couldn't retrieve the input or output stream associated with the port
      * @throws LineUnavailableException
@@ -110,7 +111,8 @@ public class Serial implements SerialPortEventListener
      * @throws NoSuchPortException
      *             the specified port does not exist
      * @throws PortInUseException
-     *             the specified port is already in use by some other application
+     *             the specified port is already in use by some other application -or- the specified
+     *             port cannot be locked (insufficient permissions on /var/lock)
      * @throws IOException
      *             couldn't retrieve the input or output stream associated with the port
      * @throws LineUnavailableException
@@ -145,7 +147,8 @@ public class Serial implements SerialPortEventListener
      * @throws NoSuchPortException
      *             the specified port does not exist
      * @throws PortInUseException
-     *             the specified port is already in use by some other application
+     *             the specified port is already in use by some other application -or- the specified
+     *             port cannot be locked (insufficient permissions on /var/lock)
      * @throws IOException
      *             couldn't retrieve the input or output stream associated with the port
      * @throws LineUnavailableException
@@ -159,21 +162,6 @@ public class Serial implements SerialPortEventListener
             throws NoSuchPortException, PortInUseException, IOException, LineUnavailableException,
             UnsupportedCommOperationException, TooManyListenersException
     {
-        // On OS X, make sure the lock folder needed by RXTX is present
-        if (System.getProperty("os.name").indexOf("Mac") != -1) {
-            File lockFolder = new File("/var/lock");
-            if (!lockFolder.exists() || !lockFolder.canRead() || !lockFolder.canWrite() || !lockFolder.canExecute()) {
-                final String MESSAGE = "To use the serial library, first open\n"
-                        + "Applications -> Utilities -> Terminal.app\n" + "and enter the following:\n"
-                        + "sudo mkdir -p /var/lock\n" + "sudo chmod 777 /var/lock";
-                System.err.println(MESSAGE);
-                // throw new RuntimeException("Additional installation required to " +
-                // "use serial, read the console below.");
-                final String msg = "Please use Tools \u2192 Fix the Serial Library.";
-                throw new RuntimeException(msg);
-            }
-        }
-
         // The following calls may throw (in turn) NoSuchPortException or PortInUseException:
         // just rethrow
         CommPortIdentifier portId = CommPortIdentifier.getPortIdentifier(iname);
