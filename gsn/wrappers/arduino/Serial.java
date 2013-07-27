@@ -39,12 +39,10 @@ import java.util.*;
 import javax.sound.sampled.LineUnavailableException;
 
 /**
- * @generate Serial.xml
- * @webref net
- * @usage application
+ * Class for sending and receiving data using the serial communication protocol.
  *
- *        DEFAULT: 9600 baud, 8 data bits (SerialPort.DATABITS_8), 1 stop bit (SerialPort.STOPBITS_1), no parity
- *        (SerialPort.PARITY_NONE)
+ * Default parameters used are: 9600 baud, 8 data bits (SerialPort.DATABITS_8), 1 stop bit
+ * (SerialPort.STOPBITS_1), no parity (SerialPort.PARITY_NONE).
  */
 public class Serial implements SerialPortEventListener
 {
@@ -76,6 +74,7 @@ public class Serial implements SerialPortEventListener
      *            the SerialPortEventListener which gets notified whenever new data is available
      * @param iname
      *            the name of the serial port to use (for example, "COM1" or "/dev/ttyACM0")
+     *
      * @throws NoSuchPortException
      *             the specified port does not exist
      * @throws PortInUseException
@@ -106,6 +105,7 @@ public class Serial implements SerialPortEventListener
      *            the name of the serial port to use (for example, "COM1" or "/dev/ttyACM0")
      * @param baudrate
      *            the baud rate to use (for example, 9600 or 115200)
+     *
      * @throws NoSuchPortException
      *             the specified port does not exist
      * @throws PortInUseException
@@ -143,6 +143,7 @@ public class Serial implements SerialPortEventListener
      *            the type of stop bits to use (for example, SerialPort.STOPBITS_1)
      * @param parity
      *            the parity method to use (for example, SerialPort.PARITY_NONE)
+     *
      * @throws NoSuchPortException
      *             the specified port does not exist
      * @throws PortInUseException
@@ -199,9 +200,9 @@ public class Serial implements SerialPortEventListener
     }
 
     /**
-     * @generate Serial_stop.xml
-     * @webref serial:serial
-     * @usage web_application
+     * Closes the connection to the serial port.
+     *
+     * It just calls dispose().
      */
     public void stop()
     {
@@ -209,7 +210,7 @@ public class Serial implements SerialPortEventListener
     }
 
     /**
-     * Used by PApplet to shut things down.
+     * Closes the connection to the serial port.
      */
     public void dispose()
     {
@@ -244,14 +245,22 @@ public class Serial implements SerialPortEventListener
         }
     }
 
+    /**
+     * Gets the name of the serial port used or null if the connection has been closed.
+     */
     public String getName()
     {
         return port == null ? null : port.getName();
     }
 
     /**
-     * Set the DTR line. Addition from Tom Hulbert.
+     * Sets or clears the DTR (Data Terminal Ready) bit in the UART, if supported by the underlying
+     * implementation.
+     *
+     * @param state
+     *            true to set the DTR bit or false to clear it
      */
+    // Addition from Tom Hulbert
     public void setDTR(boolean state)
     {
         port.setDTR(state);
@@ -293,9 +302,8 @@ public class Serial implements SerialPortEventListener
     }
 
     /**
-     * @generate Serial_buffer.xml
-     * @webref serial:serial
-     * @usage web_application
+     * Sets number of bytes to buffer before calling listener's serialEvent().
+     *
      * @param count
      *            number of bytes to buffer
      */
@@ -306,9 +314,8 @@ public class Serial implements SerialPortEventListener
     }
 
     /**
-     * @generate Serial_bufferUntil.xml
-     * @webref serial:serial
-     * @usage web_application
+     * Sets a specific byte to buffer until before calling listener's serialEvent().
+     *
      * @param what
      *            the value to buffer until
      */
@@ -319,9 +326,8 @@ public class Serial implements SerialPortEventListener
     }
 
     /**
-     * @generate Serial_available.xml
-     * @webref serial:serial
-     * @usage web_application
+     * Returns the number of bytes that have been read from the serial port and are waiting to be
+     * dealt with by the user.
      */
     public int available()
     {
@@ -329,9 +335,7 @@ public class Serial implements SerialPortEventListener
     }
 
     /**
-     * @generate Serial_clear.xml
-     * @webref serial:serial
-     * @usage web_application
+     * Ignore all the bytes read so far and empty the buffer.
      */
     public void clear()
     {
@@ -340,9 +344,10 @@ public class Serial implements SerialPortEventListener
     }
 
     /**
-     * @generate Serial_read.xml
-     * @webref serial:serial
-     * @usage web_application
+     * Reads a byte from the serial buffer.
+     *
+     * @return a number between 0 and 255 representing the byte read from the serial buffer or -1 if
+     *         the buffer is empty
      */
     public int read()
     {
@@ -359,10 +364,11 @@ public class Serial implements SerialPortEventListener
     }
 
     /**
-     * @generate Serial_last.xml <h3>Advanced</h3> Same as read() but returns the very last value received and clears
-     *           the buffer. Useful when you just want the most recent value sent over the port.
-     * @webref serial:serial
-     * @usage web_application
+     * Reads the very last byte received and clears the serial buffer. Useful to retrieve just the
+     * most recent value sent over the port.
+     *
+     * @return a number between 0 and 255 representing the byte read from the serial buffer or -1 if
+     *         the buffer is empty
      */
     public int last()
     {
@@ -376,9 +382,9 @@ public class Serial implements SerialPortEventListener
     }
 
     /**
-     * @generate Serial_readChar.xml
-     * @webref serial:serial
-     * @usage web_application
+     * Reads a byte from the serial buffer as a char.
+     *
+     * @return the char read from the serial buffer or (char)(-1) if the buffer is empty
      */
     public char readChar()
     {
@@ -387,9 +393,10 @@ public class Serial implements SerialPortEventListener
     }
 
     /**
-     * @generate Serial_lastChar.xml
-     * @webref serial:serial
-     * @usage web_application
+     * Reads as a char the very last byte received and clears the serial buffer. Useful to retrieve
+     * just the most recent value sent over the port.
+     *
+     * @return the char read from the serial buffer or (char)(-1) if the buffer is empty
      */
     public char lastChar()
     {
@@ -398,9 +405,10 @@ public class Serial implements SerialPortEventListener
     }
 
     /**
-     * @generate Serial_readBytes.xml
-     * @webref serial:serial
-     * @usage web_application
+     * Returns a new byte array holding the whole content of the serial buffer.
+     *
+     * This method is not particularly memory/speed efficient, because it creates a byte array on
+     * each read. Prefer readBytes(byte b[]).
      */
     public byte[] readBytes()
     {
@@ -418,11 +426,14 @@ public class Serial implements SerialPortEventListener
     }
 
     /**
-     * <h3>Advanced</h3> Grab whatever is in the serial buffer, and stuff it into a byte buffer passed in by the user.
-     * This is more memory/time efficient than readBytes() returning a byte[] array.
-     * 
-     * Returns an int for how many bytes were read. If more bytes are available than can fit into the byte array, only
-     * those that will fit are read.
+     * Grabs the whole content of the serial buffer and copies it into the given buffer. If the
+     * serial buffer contains more bytes than the given buffer's length, only those that will fit
+     * are read and copied.
+     *
+     * @param outgoing
+     *            a buffer to copy the data into
+     *
+     * @return an integer specifying how many bytes were read
      */
     public int readBytes(byte outgoing[])
     {
@@ -443,11 +454,13 @@ public class Serial implements SerialPortEventListener
     }
 
     /**
-     * @generate Serial_readBytesUntil.xml
-     * @webref serial:serial
-     * @usage web_application
+     * Reads an array of bytes from the serial buffer until (and including) a particular byte is
+     * encountered. If the specified byte isn't in the serial buffer, then 'null' is returned.
+     *
      * @param interesting
-     *            character designated to mark the end of the data
+     *            the byte designated to mark the end of the data
+     *
+     * @return a buffer containing the bytes read or null if the specified byte was not found
      */
     public byte[] readBytesUntil(int interesting)
     {
@@ -478,12 +491,16 @@ public class Serial implements SerialPortEventListener
     }
 
     /**
-     * <h3>Advanced</h3> If outgoing[] is not big enough, then -1 is returned, and an error message is printed on the
-     * console. If nothing is in the buffer, zero is returned. If 'interesting' byte is not in the buffer, then 0 is
-     * returned.
-     * 
+     * Reads an array of bytes from the serial buffer until (and including) a particular byte is
+     * encountered.
+     *
+     * @param interesting
+     *            the byte designated to mark the end of the data
      * @param outgoing
-     *            passed in byte array to be altered
+     *            a buffer to copy the data into
+     *
+     * @return the number of bytes read, or -1 if the given buffer's capacity is insufficient, or
+     *         zero if the buffer is empty or the specified byte was not found
      */
     public int readBytesUntil(int interesting, byte outgoing[])
     {
@@ -516,9 +533,8 @@ public class Serial implements SerialPortEventListener
     }
 
     /**
-     * @generate Serial_readString.xml
-     * @webref serial:serial
-     * @usage web_application
+     * Returns the whole content of the serial buffer as a String, assuming that the incoming
+     * characters are ASCII.
      */
     public String readString()
     {
@@ -527,14 +543,13 @@ public class Serial implements SerialPortEventListener
     }
 
     /**
-     * @generate Serial_readStringUntil.xml <h3>Advanced</h3> If you want to move Unicode data, you can first convert
-     *           the String to a byte stream in the representation of your choice (i.e. UTF8 or two-byte Unicode data),
-     *           and send it as a byte array.
-     * 
-     * @webref serial:serial
-     * @usage web_application
+     * Reads a string from the serial buffer until (and including) a particular byte is encountered.
+     * If the specified byte isn't in the serial buffer, then 'null' is returned.
+     *
      * @param interesting
-     *            character designated to mark the end of the data
+     *            the byte designated to mark the end of the data
+     *
+     * @return a String containing the bytes read or null if the specified byte was not found
      */
     public String readStringUntil(int interesting)
     {
@@ -544,11 +559,14 @@ public class Serial implements SerialPortEventListener
     }
 
     /**
-     * <h3>Advanced</h3> This will handle both ints, bytes and chars transparently.
-     * 
+     * Writes the specified byte to the serial port. The byte to be written is the eight low-order
+     * bits of the argument (the 24 high-order bits are ignored).
+     *
      * @param what
-     *            data to write
+     *            the byte to write
+     *
      * @throws IOException
+     *             if an I/O error occurs (for example if the output stream has been closed)
      */
     public void write(int what) throws IOException
     {
@@ -558,9 +576,13 @@ public class Serial implements SerialPortEventListener
     }
 
     /**
+     * Writes the whole content of the given byte array to the serial port.
+     *
      * @param bytes
-     *            [] data to write
+     *            the data to write
+     *
      * @throws IOException
+     *             if an I/O error occurs (for example if the output stream has been closed)
      */
     public void write(byte bytes[]) throws IOException
     {
@@ -569,19 +591,22 @@ public class Serial implements SerialPortEventListener
     }
 
     /**
-     * @generate Serial_write.xml <h3>Advanced</h3> Write a String to the output. Note that this doesn't account for
-     *           Unicode (two bytes per char), nor will it send UTF8 characters.. It assumes that you mean to send a
-     *           byte buffer (most often the case for networking and serial i/o) and will only use the bottom 8 bits of
-     *           each char in the string. (Meaning that internally it uses String.getBytes)
-     * 
-     *           If you want to move Unicode data, you can first convert the String to a byte stream in the
-     *           representation of your choice (i.e. UTF8 or two-byte Unicode data), and send it as a byte array.
-     * 
-     * @webref serial:serial
-     * @usage web_application
+     * Writes a string to the serial port.
+     *
+     * Notice that this doesn't account for Unicode (two bytes per char), nor will it send UTF8
+     * characters. It assumes that you mean to send a byte buffer (most often the case for
+     * networking and serial i/o) and will only use the bottom 8 bits of each char in the string.
+     * (Meaning that internally it uses String.getBytes)
+     *
+     * If you want to move Unicode data, you can first convert the String to a byte stream in the
+     * representation of your choice (i.e. UTF8 or two-byte Unicode data), and send it as a byte
+     * array.
+     *
      * @param what
-     *            data to write
+     *            the String to write
+     *
      * @throws IOException
+     *             if an I/O error occurs (for example if the output stream has been closed)
      */
     public void write(String what) throws IOException
     {
@@ -589,11 +614,10 @@ public class Serial implements SerialPortEventListener
     }
 
     /**
-     * @generate Serial_list.xml <h3>Advanced</h3> If this just hangs and never completes on Windows, it may be because
-     *           the DLL doesn't have its exec bit set. Why the hell that'd be the case, who knows.
-     * 
-     * @webref serial
-     * @usage web_application
+     * Retrieves the list of available serial ports.
+     *
+     * If this just hangs and never completes on Windows, it may be because the DLL doesn't have its
+     * exec bit set. Why the hell that'd be the case, who knows.
      */
     static public String[] list()
     {
@@ -623,7 +647,8 @@ public class Serial implements SerialPortEventListener
     }
 
     /**
-     * General error reporting, all corraled here just in case I think of something slightly more intelligent to do.
+     * General error reporting, all corraled here just in case I think of something slightly more
+     * intelligent to do.
      */
     static public void errorMessage(String where, Throwable e)
     {
