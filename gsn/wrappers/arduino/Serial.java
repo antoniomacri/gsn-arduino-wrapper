@@ -622,25 +622,17 @@ public class Serial implements SerialPortEventListener
     static public String[] list()
     {
         Vector<String> list = new Vector<String>();
-        try {
-            Enumeration<?> portList = CommPortIdentifier.getPortIdentifiers();
-            while (portList.hasMoreElements()) {
-                CommPortIdentifier portId = (CommPortIdentifier) portList.nextElement();
 
-                if (portId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
-                    String name = portId.getName();
-                    list.addElement(name);
-                }
+        Enumeration<?> portList = CommPortIdentifier.getPortIdentifiers();
+        while (portList.hasMoreElements()) {
+            CommPortIdentifier portId = (CommPortIdentifier) portList.nextElement();
+
+            if (portId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
+                String name = portId.getName();
+                list.addElement(name);
             }
+        }
 
-        }
-        catch (UnsatisfiedLinkError e) {
-            errorMessage("ports", e);
-
-        }
-        catch (Exception e) {
-            errorMessage("ports", e);
-        }
         String outgoing[] = new String[list.size()];
         list.copyInto(outgoing);
         return outgoing;
