@@ -122,13 +122,13 @@ public class Arduino {
         return analogInputData[pin];
     }
 
-    public void pinMode(int pin, int mode){
+    public void pinMode(int pin, int mode) throws IOException{
         serial.write(SET_PIN_MODE);
         serial.write(pin);
         serial.write(mode);
     }
 
-    public void digitalWrite(int pin, int value){
+    public void digitalWrite(int pin, int value) throws IOException{
         int portNumber=(pin>>3) & 0x0F;
 
         if(value==0)
@@ -140,7 +140,7 @@ public class Arduino {
         serial.write(digitalOutputData[portNumber] >> 7);
     }
 
-    public void analogWrite(int pin, int value){
+    public void analogWrite(int pin, int value) throws IOException{
         pinMode(pin, PWM);
         serial.write(ANALOG_MESSAGE | (pin & 0x0F));
         serial.write(value & 0x7F);

@@ -550,34 +550,24 @@ public class Serial implements SerialPortEventListener
      * 
      * @param what
      *            data to write
+     * @throws IOException
      */
-    public void write(int what)
-    { // will also cover char
-        try {
-            output.write(what & 0xff); // for good measure do the &
-            output.flush(); // hmm, not sure if a good idea
-
-        }
-        catch (Exception e) { // null pointer or serial port dead
-            errorMessage("write", e);
-        }
+    public void write(int what) throws IOException
+    {
+        // will also cover char
+        output.write(what & 0xff); // for good measure do the &
+        output.flush(); // it is a good idea to flush the stream?
     }
 
     /**
      * @param bytes
      *            [] data to write
+     * @throws IOException
      */
-    public void write(byte bytes[])
+    public void write(byte bytes[]) throws IOException
     {
-        try {
-            output.write(bytes);
-            output.flush(); // hmm, not sure if a good idea
-
-        }
-        catch (Exception e) { // null pointer or serial port dead
-            // errorMessage("write", e);
-            e.printStackTrace();
-        }
+        output.write(bytes);
+        output.flush(); // it is a good idea to flush the stream?
     }
 
     /**
@@ -593,8 +583,9 @@ public class Serial implements SerialPortEventListener
      * @usage web_application
      * @param what
      *            data to write
+     * @throws IOException
      */
-    public void write(String what)
+    public void write(String what) throws IOException
     {
         write(what.getBytes());
     }

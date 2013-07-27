@@ -94,7 +94,14 @@ public class ArduinoWrapper extends AbstractWrapper
         }
 
         // Configure Arduino for this pin/sensor
-        arduino.pinMode(pin, Arduino.INPUT);
+        try {
+            arduino.pinMode(pin, Arduino.INPUT);
+        }
+        catch (IOException e) {
+            logger.error("Cannot write data through the serial port.", e);
+            this.dispose();
+            return false;
+        }
 
         collection = new DataField[] {
             // We always provide an integer value, as read from the sensors.
