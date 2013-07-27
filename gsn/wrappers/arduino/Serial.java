@@ -502,8 +502,6 @@ public class Serial implements SerialPortEventListener
 
             int length = found - bufferIndex + 1;
             if (length > outgoing.length) {
-                System.err.println("readBytesUntil() byte buffer is" + " too small for the " + length
-                        + " bytes up to and including char " + interesting);
                 return -1;
             }
             System.arraycopy(buffer, bufferIndex, outgoing, 0, length);
