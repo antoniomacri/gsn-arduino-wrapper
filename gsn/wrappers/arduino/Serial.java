@@ -246,7 +246,7 @@ public class Serial implements SerialPortEventListener
 
     public String getName()
     {
-        return port.getName();
+        return port == null ? null : port.getName();
     }
 
     /**
