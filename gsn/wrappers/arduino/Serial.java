@@ -74,7 +74,7 @@ public class Serial implements SerialPortEventListener
      *            the name of the serial port to use (for example, "COM1" or "/dev/ttyACM0")
      *
      * @throws NoSuchPortException
-     *             the specified port does not exist
+     *             the specified port does not exist or it is not a serial port
      * @throws PortInUseException
      *             the specified port is already in use by some other application -or- the specified
      *             port cannot be locked (insufficient permissions on /var/lock)
@@ -104,7 +104,7 @@ public class Serial implements SerialPortEventListener
      *            the baud rate to use (for example, 9600 or 115200)
      *
      * @throws NoSuchPortException
-     *             the specified port does not exist
+     *             the specified port does not exist or it is not a serial port
      * @throws PortInUseException
      *             the specified port is already in use by some other application -or- the specified
      *             port cannot be locked (insufficient permissions on /var/lock)
@@ -140,7 +140,7 @@ public class Serial implements SerialPortEventListener
      *            the parity method to use (for example, SerialPort.PARITY_NONE)
      *
      * @throws NoSuchPortException
-     *             the specified port does not exist
+     *             the specified port does not exist or it is not a serial port
      * @throws PortInUseException
      *             the specified port is already in use by some other application -or- the specified
      *             port cannot be locked (insufficient permissions on /var/lock)
@@ -159,6 +159,9 @@ public class Serial implements SerialPortEventListener
         // The following calls may throw (in turn) NoSuchPortException or PortInUseException:
         // just rethrow
         CommPortIdentifier portId = CommPortIdentifier.getPortIdentifier(iname);
+        if (portId.getPortType() != CommPortIdentifier.PORT_SERIAL) {
+            throw new NoSuchPortException();
+        }
         port = (SerialPort) portId.open(this.getClass().getName(), 2000);
 
         try {
