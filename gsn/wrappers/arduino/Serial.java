@@ -36,8 +36,6 @@ import gnu.io.*;
 import java.io.*;
 import java.util.*;
 
-import javax.sound.sampled.LineUnavailableException;
-
 /**
  * Class for sending and receiving data using the serial communication protocol.
  *
@@ -81,16 +79,15 @@ public class Serial implements SerialPortEventListener
      *             the specified port is already in use by some other application -or- the specified
      *             port cannot be locked (insufficient permissions on /var/lock)
      * @throws IOException
-     *             couldn't retrieve the input or output stream associated with the port
-     * @throws LineUnavailableException
-     *             the specified port does not support receiving or sending data
+     *             couldn't retrieve the input or output stream associated with the port -or- the
+     *             specified port does not support receiving or sending data
      * @throws UnsupportedCommOperationException
      *             the specified parameters are not valid
      * @throws TooManyListenersException
      *             the serial port already has a registered listener
      */
     public Serial(SerialPortEventListener listener, String iname) throws NoSuchPortException, PortInUseException,
-            IOException, LineUnavailableException, UnsupportedCommOperationException, TooManyListenersException
+            IOException, UnsupportedCommOperationException, TooManyListenersException
     {
         this(listener, iname, DEFAULT_RATE, DEFAULT_PARITY, DEFAULT_DATABITS, DEFAULT_STOPBITS);
     }
@@ -112,17 +109,15 @@ public class Serial implements SerialPortEventListener
      *             the specified port is already in use by some other application -or- the specified
      *             port cannot be locked (insufficient permissions on /var/lock)
      * @throws IOException
-     *             couldn't retrieve the input or output stream associated with the port
-     * @throws LineUnavailableException
-     *             the specified port does not support receiving or sending data
+     *             couldn't retrieve the input or output stream associated with the port -or- the
+     *             specified port does not support receiving or sending data
      * @throws UnsupportedCommOperationException
      *             the specified parameters are not valid
      * @throws TooManyListenersException
      *             the serial port already has a registered listener
      */
     public Serial(SerialPortEventListener listener, String iname, int baudrate) throws NoSuchPortException,
-            PortInUseException, IOException, LineUnavailableException, UnsupportedCommOperationException,
-            TooManyListenersException
+            PortInUseException, IOException, UnsupportedCommOperationException, TooManyListenersException
     {
         this(listener, iname, baudrate, DEFAULT_DATABITS, DEFAULT_STOPBITS, DEFAULT_PARITY);
     }
@@ -150,17 +145,16 @@ public class Serial implements SerialPortEventListener
      *             the specified port is already in use by some other application -or- the specified
      *             port cannot be locked (insufficient permissions on /var/lock)
      * @throws IOException
-     *             couldn't retrieve the input or output stream associated with the port
-     * @throws LineUnavailableException
-     *             the specified port does not support receiving or sending data
+     *             couldn't retrieve the input or output stream associated with the port -or- the
+     *             specified port does not support receiving or sending data
      * @throws UnsupportedCommOperationException
      *             the specified parameters are not valid
      * @throws TooManyListenersException
      *             the serial port already has a registered listener
      */
     public Serial(SerialPortEventListener listener, String iname, int baudrate, int dataBits, int stopBits, int parity)
-            throws NoSuchPortException, PortInUseException, IOException, LineUnavailableException,
-            UnsupportedCommOperationException, TooManyListenersException
+            throws NoSuchPortException, PortInUseException, IOException, UnsupportedCommOperationException,
+            TooManyListenersException
     {
         // The following calls may throw (in turn) NoSuchPortException or PortInUseException:
         // just rethrow
@@ -172,12 +166,10 @@ public class Serial implements SerialPortEventListener
             input = port.getInputStream();
             output = port.getOutputStream();
             if (input == null) {
-                throw new LineUnavailableException(
-                        "The specified port is unidirectional and doesn't support receiving data.");
+                throw new IOException("The specified port is unidirectional and doesn't support receiving data.");
             }
             if (output == null) {
-                throw new LineUnavailableException(
-                        "The specified port is unidirectional and doesn't support sending data.");
+                throw new IOException("The specified port is unidirectional and doesn't support sending data.");
             }
 
             // setSerialPortParams() may throw UnsupportedCommOperationException

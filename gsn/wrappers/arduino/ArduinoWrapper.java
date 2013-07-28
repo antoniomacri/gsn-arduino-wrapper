@@ -79,8 +79,8 @@ public class ArduinoWrapper extends AbstractWrapper
                 try {
                     arduino = new Arduino(list[0], 57600);
                 }
-                catch (NoSuchPortException | PortInUseException | IOException | LineUnavailableException
-                        | UnsupportedCommOperationException | TooManyListenersException e) {
+                catch (NoSuchPortException | PortInUseException | IOException | UnsupportedCommOperationException
+                        | TooManyListenersException e) {
                     logger.error("An error occurred while instantiating Arduino.", e);
                     return false;
                 }
