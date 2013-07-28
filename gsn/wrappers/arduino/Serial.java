@@ -189,12 +189,25 @@ public class Serial implements SerialPortEventListener
             port.notifyOnDataAvailable(true);
         }
         catch (Exception e) {
-            if (port != null) {
-                port.close();
-                port = null;
+            // Close both streams as well as the port (see dispose())
+            try {
+                if (input != null) {
+                    input.close();
+                    input = null;
+                }
+                if (output != null) {
+                    output.close();
+                    output = null;
+                }
+                if (port != null) {
+                    port.close();
+                    port = null;
+                }
             }
-            input = null;
-            output = null;
+            catch (Exception e2) {
+                // Don't do anything.
+                // Printing a stack trace here may confuse about the original source of exception.
+            }
             throw e;
         }
     }
@@ -214,6 +227,10 @@ public class Serial implements SerialPortEventListener
      */
     public void dispose()
     {
+        // It is very important to close input and output streams as well as the port.
+        // Otherwise Java, driver and OS resources are not released. See:
+        // http://en.wikibooks.org/wiki/Serial_Programming/Serial_Java#Initialize_a_Serial_Port
+
         try {
             if (input != null) {
                 input.close();
