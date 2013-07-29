@@ -321,7 +321,7 @@ public class Serial implements SerialPortEventListener
             }
         }
         catch (IOException e) {
-            errorMessage("serialEvent", e);
+            e.printStackTrace();
         }
     }
 
@@ -660,15 +660,5 @@ public class Serial implements SerialPortEventListener
         String outgoing[] = new String[list.size()];
         list.copyInto(outgoing);
         return outgoing;
-    }
-
-    /**
-     * General error reporting, all corraled here just in case I think of something slightly more
-     * intelligent to do.
-     */
-    static public void errorMessage(String where, Throwable e)
-    {
-        e.printStackTrace();
-        throw new RuntimeException("Error inside Serial." + where + "()");
     }
 }
