@@ -220,7 +220,10 @@ public class Serial implements SerialPortEventListener
     /**
      * Closes the connection to the serial port.
      */
-    public void dispose()
+    // Since dispose() closes the input stream and sets it to null, to prevent errors
+    // we declare both dispose() and serialEvent() as synchronized. (Also suggested on
+    // http://playground.arduino.cc/Interfacing/Java, see "Proper Port Handling".)
+    synchronized public void dispose()
     {
         // It is very important to close input and output streams as well as the port.
         // Otherwise Java, driver and OS resources are not released. See:
@@ -279,37 +282,46 @@ public class Serial implements SerialPortEventListener
     }
 
     /**
-     * @generate serialEvent.xml
-     * @webref serial:events
-     * @usage web_application
+     * This method is called whenever a new event from the serial port occurs.
+     *
+     * It is not intended to be called directly. It basically comes into play when new data is
+     * available from the port: first, the received bytes are copied to the internal buffer, and
+     * then the serialEvent of the listener is invoked.
+     *
      * @param serialEvent
-     *            the port where new data is available
+     *            the serial event object specifying the type of event occurred
      */
+    // Declared as synchronized to avoid errors when an event is being handled
+    // after the dispose() is called. See also dispose() for more info.
+    @Override
     synchronized public void serialEvent(SerialPortEvent serialEvent)
     {
-        if (serialEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
-            try {
-                while (input.available() > 0) {
-                    synchronized (buffer) {
-                        if (bufferLast == buffer.length) {
-                            byte temp[] = new byte[bufferLast << 1];
-                            System.arraycopy(buffer, 0, temp, 0, bufferLast);
-                            buffer = temp;
-                        }
-                        buffer[bufferLast++] = (byte) input.read();
-                        if (listener != null) {
-                            if ((bufferUntil && (buffer[bufferLast - 1] == bufferUntilByte))
-                                    || (!bufferUntil && ((bufferLast - bufferIndex) >= bufferSize))) {
-                                listener.serialEvent(serialEvent);
-                            }
+        if (input == null) {
+            return;
+        }
+        if (serialEvent.getEventType() != SerialPortEvent.DATA_AVAILABLE) {
+            return;
+        }
+        try {
+            while (input.available() > 0) {
+                synchronized (buffer) {
+                    if (bufferLast == buffer.length) {
+                        byte temp[] = new byte[bufferLast << 1];
+                        System.arraycopy(buffer, 0, temp, 0, bufferLast);
+                        buffer = temp;
+                    }
+                    buffer[bufferLast++] = (byte) input.read();
+                    if (listener != null) {
+                        if ((bufferUntil && (buffer[bufferLast - 1] == bufferUntilByte))
+                                || (!bufferUntil && ((bufferLast - bufferIndex) >= bufferSize))) {
+                            listener.serialEvent(serialEvent);
                         }
                     }
                 }
-
             }
-            catch (IOException e) {
-                errorMessage("serialEvent", e);
-            }
+        }
+        catch (IOException e) {
+            errorMessage("serialEvent", e);
         }
     }
 
