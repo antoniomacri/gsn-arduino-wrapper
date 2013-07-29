@@ -1,14 +1,19 @@
-package gsn.wrappers;
+package gsn.wrappers.arduino;
 
+import java.io.IOException;
 import java.io.Serializable;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import com.shigeodayo.javarduino.Arduino;
 
+import gnu.io.NoSuchPortException;
+import gnu.io.PortInUseException;
+import gnu.io.UnsupportedCommOperationException;
 import gsn.beans.AddressBean;
 import gsn.beans.DataField;
 import gsn.beans.StreamElement;
+import gsn.wrappers.AbstractWrapper;
 
 /**
  * This wrapper allows to read data from various sensors on an Arduino board.
@@ -67,7 +72,13 @@ public class ArduinoWrapper extends AbstractWrapper
                     return false;
                 }
                 logger.debug("Found " + list.length + " Arduino(s) connected.");
-                arduino = new Arduino(list[0], 57600);
+                try {
+                    arduino = new Arduino(list[0], 57600);
+                }
+                catch (NoSuchPortException | PortInUseException | IOException | UnsupportedCommOperationException e) {
+                    logger.error("An error occurred while instantiating Arduino.", e);
+                    return false;
+                }
                 logger.debug("Arduino instantiated on port " + list[0] + ".");
             }
 
@@ -78,7 +89,14 @@ public class ArduinoWrapper extends AbstractWrapper
         }
 
         // Configure Arduino for this pin/sensor
-        arduino.pinMode(pin, Arduino.INPUT);
+        try {
+            arduino.pinMode(pin, Arduino.INPUT);
+        }
+        catch (IOException e) {
+            logger.error("Cannot write data through the serial port.", e);
+            this.dispose();
+            return false;
+        }
 
         collection = new DataField[] {
             // We always provide an integer value, as read from the sensors.

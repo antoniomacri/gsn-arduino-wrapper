@@ -17,6 +17,15 @@
 */
 package com.shigeodayo.javarduino;
 
+import java.io.IOException;
+
+import gnu.io.NoSuchPortException;
+import gnu.io.PortInUseException;
+import gnu.io.SerialPortEvent;
+import gnu.io.SerialPortEventListener;
+import gnu.io.UnsupportedCommOperationException;
+import gsn.wrappers.arduino.Serial;
+
 
 public class Arduino {
 
@@ -63,17 +72,24 @@ public class Arduino {
     private int minorVersion=0;
 
 
-    public class SerialProxy{
-        public void serialEvent(Serial which){
+    public class SerialProxy implements SerialPortEventListener {
+        @Override
+        public void serialEvent(SerialPortEvent arg) {
             while(available()>0)
                 processInput();
         }
     }
 
-    public Arduino(String iname){
+    public Arduino(String iname)
+        throws NoSuchPortException, PortInUseException, IOException,
+        UnsupportedCommOperationException
+    {
         this(iname, 57600);
     }
-    public Arduino(String iname, int irate){
+    public Arduino(String iname, int irate)
+        throws NoSuchPortException, PortInUseException, IOException,
+        UnsupportedCommOperationException
+    {
         serialProxy=new SerialProxy();
         serial=new Serial(serialProxy, iname, irate);
 
@@ -103,13 +119,13 @@ public class Arduino {
         return analogInputData[pin];
     }
 
-    public void pinMode(int pin, int mode){
+    public void pinMode(int pin, int mode) throws IOException{
         serial.write(SET_PIN_MODE);
         serial.write(pin);
         serial.write(mode);
     }
 
-    public void digitalWrite(int pin, int value){
+    public void digitalWrite(int pin, int value) throws IOException{
         int portNumber=(pin>>3) & 0x0F;
 
         if(value==0)
@@ -121,7 +137,7 @@ public class Arduino {
         serial.write(digitalOutputData[portNumber] >> 7);
     }
 
-    public void analogWrite(int pin, int value){
+    public void analogWrite(int pin, int value) throws IOException{
         pinMode(pin, PWM);
         serial.write(ANALOG_MESSAGE | (pin & 0x0F));
         serial.write(value & 0x7F);
