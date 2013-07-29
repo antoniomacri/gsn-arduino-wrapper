@@ -2,10 +2,6 @@ package gsn.wrappers.arduino;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.TooManyListenersException;
-
-import javax.sound.sampled.LineUnavailableException;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -79,8 +75,7 @@ public class ArduinoWrapper extends AbstractWrapper
                 try {
                     arduino = new Arduino(list[0], 57600);
                 }
-                catch (NoSuchPortException | PortInUseException | IOException | UnsupportedCommOperationException
-                        | TooManyListenersException e) {
+                catch (NoSuchPortException | PortInUseException | IOException | UnsupportedCommOperationException e) {
                     logger.error("An error occurred while instantiating Arduino.", e);
                     return false;
                 }

@@ -83,11 +83,9 @@ public class Serial implements SerialPortEventListener
      *             specified port does not support receiving or sending data
      * @throws UnsupportedCommOperationException
      *             the specified parameters are not valid
-     * @throws TooManyListenersException
-     *             the serial port already has a registered listener
      */
     public Serial(SerialPortEventListener listener, String iname) throws NoSuchPortException, PortInUseException,
-            IOException, UnsupportedCommOperationException, TooManyListenersException
+            IOException, UnsupportedCommOperationException
     {
         this(listener, iname, DEFAULT_RATE, DEFAULT_PARITY, DEFAULT_DATABITS, DEFAULT_STOPBITS);
     }
@@ -113,11 +111,9 @@ public class Serial implements SerialPortEventListener
      *             specified port does not support receiving or sending data
      * @throws UnsupportedCommOperationException
      *             the specified parameters are not valid
-     * @throws TooManyListenersException
-     *             the serial port already has a registered listener
      */
     public Serial(SerialPortEventListener listener, String iname, int baudrate) throws NoSuchPortException,
-            PortInUseException, IOException, UnsupportedCommOperationException, TooManyListenersException
+            PortInUseException, IOException, UnsupportedCommOperationException
     {
         this(listener, iname, baudrate, DEFAULT_DATABITS, DEFAULT_STOPBITS, DEFAULT_PARITY);
     }
@@ -149,12 +145,9 @@ public class Serial implements SerialPortEventListener
      *             specified port does not support receiving or sending data
      * @throws UnsupportedCommOperationException
      *             the specified parameters are not valid
-     * @throws TooManyListenersException
-     *             the serial port already has a registered listener
      */
     public Serial(SerialPortEventListener listener, String iname, int baudrate, int dataBits, int stopBits, int parity)
-            throws NoSuchPortException, PortInUseException, IOException, UnsupportedCommOperationException,
-            TooManyListenersException
+            throws NoSuchPortException, PortInUseException, IOException, UnsupportedCommOperationException
     {
         // The following calls may throw (in turn) NoSuchPortException or PortInUseException:
         // just rethrow
@@ -178,9 +171,14 @@ public class Serial implements SerialPortEventListener
             // setSerialPortParams() may throw UnsupportedCommOperationException
             port.setSerialPortParams(baudrate, dataBits, stopBits, parity);
 
-            // addEventListener() may throw TooManyListenersException
             this.listener = listener; // Better to set the listener before addEventListener()
-            port.addEventListener(this);
+            try {
+                port.addEventListener(this);
+            }
+            catch (TooManyListenersException e) {
+                // Should not happen. It should signify an error in the Serial class
+                e.printStackTrace();
+            }
             port.notifyOnDataAvailable(true);
         }
         catch (Exception e) {
