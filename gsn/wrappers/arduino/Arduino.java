@@ -72,11 +72,11 @@ public class Arduino
     public static final int I2C = 6;
 
     /**
-     * Constant to write a high value (+5 volts) to a pin (in a call to digitalWrite()).
+     * Constant to write a low value (0 volts) to a pin (in a call to digitalWrite()).
      */
     public static final int LOW = 0;
     /**
-     * Constant to write a low value (0 volts) to a pin (in a call to digitalWrite()).
+     * Constant to write a high value (+5 volts) to a pin (in a call to digitalWrite()).
      */
     public static final int HIGH = 1;
 
