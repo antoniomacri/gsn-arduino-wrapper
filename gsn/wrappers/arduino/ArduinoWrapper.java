@@ -5,8 +5,6 @@ import java.io.Serializable;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import com.shigeodayo.javarduino.Arduino;
-
 import gnu.io.NoSuchPortException;
 import gnu.io.PortInUseException;
 import gnu.io.UnsupportedCommOperationException;

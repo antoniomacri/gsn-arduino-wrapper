@@ -29,7 +29,7 @@
   02110-1301, USA.
 */
 
-package cc.arduino;
+package gsn.wrappers.arduino;
 
 import processing.core.PApplet;
 import processing.serial.Serial;
