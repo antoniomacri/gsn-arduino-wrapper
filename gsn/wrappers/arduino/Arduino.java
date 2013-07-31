@@ -67,47 +67,47 @@ public class Arduino
      * are provided, containing respectively the LSB (bits 0-6) and the MSB (bits 7-13) of the
      * value.
      */
-    private final int DIGITAL_MESSAGE = 0x90;
+    private static final int DIGITAL_MESSAGE = 0x90;
     /**
      * Receive data for an analog pin or sent data to a PWM pin. The MIDI channel contains the pin
      * number. Two byte-arguments are provided, containing respectively the LSB (bits 0-6) and the
      * MSB (bits 7-13) of the value.
      */
-    private final int ANALOG_MESSAGE = 0xE0;
+    private static final int ANALOG_MESSAGE = 0xE0;
     /**
      * Enable/disable analog input from a pin. The MIDI channel contains the pin number. The
      * additional one-byte argument indicates whether to disable (0) or enable (1).
      */
-    private final int REPORT_ANALOG = 0xC0;
+    private static final int REPORT_ANALOG = 0xC0;
     /**
      * Enable/disable digital input from a port. The MIDI channel contains the port. The additional
      * one-byte argument indicates whether to disable (0) or enable (1).
      */
-    private final int REPORT_DIGITAL = 0xD0;
+    private static final int REPORT_DIGITAL = 0xD0;
     /**
      * Used to set a pin to a specific mode. The MIDI channel is not present. Two one-byte arguments
      * are provided, containing respectively the pin number and the pin mode.
      */
-    private final int SET_PIN_MODE = 0xF4;
+    private static final int SET_PIN_MODE = 0xF4;
     /**
      * Reports the firmware version. Two one-byte arguments are provided, containing respectively
      * the major and the minor version numbers.
      */
-    private final int REPORT_VERSION = 0xF9;
+    private static final int REPORT_VERSION = 0xF9;
     /**
      * Issues a soft reset. No MIDI channel and no arguments.
      */
     @SuppressWarnings("unused")
-    private final int SYSTEM_RESET = 0xFF;
+    private static final int SYSTEM_RESET = 0xFF;
     /**
      * Starts a MIDI SysEx message. No MIDI channel and no arguments.
      */
     @SuppressWarnings("unused")
-    private final int START_SYSEX = 0xF0;
+    private static final int START_SYSEX = 0xF0;
     /**
      * Ends a MIDI SysEx message. No MIDI channel and no arguments.
      */
-    private final int END_SYSEX = 0xF7;
+    private static final int END_SYSEX = 0xF7;
 
     private Serial serial = null;
     private SerialProxy serialProxy = null;
