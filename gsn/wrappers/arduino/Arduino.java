@@ -31,8 +31,8 @@
 
 package gsn.wrappers.arduino;
 
-import processing.core.PApplet;
-import processing.serial.Serial;
+import gnu.io.SerialPortEvent;
+import gnu.io.SerialPortEventListener;
 
 /**
  * Together with the Firmata 2 firmware (an Arduino sketch uploaded to the Arduino board), this
@@ -91,7 +91,6 @@ public class Arduino
     private final int START_SYSEX = 0xF0; // start a MIDI SysEx message
     private final int END_SYSEX = 0xF7; // end a MIDI SysEx message
 
-    PApplet parent;
     Serial serial;
     SerialProxy serialProxy;
 
@@ -115,23 +114,10 @@ public class Arduino
     int majorVersion = 0;
     int minorVersion = 0;
 
-    // We need a class descended from PApplet so that we can override the
-    // serialEvent() method to capture serial data. We can't use the Arduino
-    // class itself, because PApplet defines a list() method that couldn't be
-    // overridden by the static list() method we use to return the available
-    // serial ports. This class needs to be public so that the Serial class
-    // can access its serialEvent() method.
-    public class SerialProxy extends PApplet
+    public class SerialProxy implements SerialPortEventListener
     {
-        public SerialProxy()
-        {
-            // Create the container for the registered dispose() methods, so that
-            // our Serial instance can register its dispose() method (which it does
-            // automatically).
-            disposeMethods = new RegisteredMethods();
-        }
-
-        public void serialEvent(Serial which)
+        @Override
+        public void serialEvent(SerialPortEvent arg)
         {
             // Notify the Arduino class that there's serial data for it to process.
             while (available() > 0)
@@ -163,9 +149,9 @@ public class Arduino
      *            the name of the serial device associated with the Arduino board (e.g. one the
      *            elements of the array returned by Arduino.list())
      */
-    public Arduino(PApplet parent, String iname)
+    public Arduino(String iname)
     {
-        this(parent, iname, 57600);
+        this(iname, 57600);
     }
 
     /**
@@ -181,9 +167,8 @@ public class Arduino
      *            defaults to 57600, and the examples use this rate, but other firmwares may
      *            override it)
      */
-    public Arduino(PApplet parent, String iname, int irate)
+    public Arduino(String iname, int irate)
     {
-        this.parent = parent;
         this.serialProxy = new SerialProxy();
         this.serial = new Serial(serialProxy, iname, irate);
 
@@ -202,8 +187,6 @@ public class Arduino
             serial.write(REPORT_DIGITAL | i);
             serial.write(1);
         }
-
-        parent.registerDispose(this);
     }
 
     /**
