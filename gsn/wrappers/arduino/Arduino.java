@@ -42,60 +42,77 @@ import java.io.IOException;
  */
 public class Arduino
 {
-    /**
-     * Constant to set a pin to input mode (in a call to pinMode()).
-     */
+    /** In a call to pinMode(), sets a pin to input mode. */
     public static final int INPUT = 0;
-    /**
-     * Constant to set a pin to output mode (in a call to pinMode()).
-     */
+    /** In a call to pinMode(), sets a pin to output mode. */
     public static final int OUTPUT = 1;
-    /**
-     * Constant to set a pin to analog mode (in a call to pinMode()).
-     */
+    /** In a call to pinMode(), sets a pin to analog mode. */
     public static final int ANALOG = 2;
-    /**
-     * Constant to set a pin to PWM mode (in a call to pinMode()).
-     */
+    /** In a call to pinMode(), sets a pin to PWM mode. */
     public static final int PWM = 3;
-    /**
-     * Constant to set a pin to servo mode (in a call to pinMode()).
-     */
+    /** In a call to pinMode(), sets a pin to servo mode. */
     public static final int SERVO = 4;
-    /**
-     * Constant to set a pin to shiftIn/shiftOut mode (in a call to pinMode()).
-     */
+    /** In a call to pinMode(), sets a pin to shiftIn/shiftOut mode. */
     public static final int SHIFT = 5;
-    /**
-     * Constant to set a pin to I2C mode (in a call to pinMode()).
-     */
+    /** In a call to pinMode(), sets a pin to I2C mode. */
     public static final int I2C = 6;
 
-    /**
-     * Constant to write a low value (0 volts) to a pin (in a call to digitalWrite()).
-     */
+    /** In a call to digitalWrite(), writes a low value (0 volts) to a pin. */
     public static final int LOW = 0;
-    /**
-     * Constant to write a high value (+5 volts) to a pin (in a call to digitalWrite()).
-     */
+    /** In a call to digitalWrite(), writes a high value (+5 volts) to a pin. */
     public static final int HIGH = 1;
 
-    private final int MAX_DATA_BYTES = 32;
-
-    private final int DIGITAL_MESSAGE = 0x90; // send data for a digital port
-    private final int ANALOG_MESSAGE = 0xE0; // send data for an analog pin (or PWM)
-    private final int REPORT_ANALOG = 0xC0; // enable analog input by pin #
-    private final int REPORT_DIGITAL = 0xD0; // enable digital input by port
-    private final int SET_PIN_MODE = 0xF4; // set a pin to INPUT/OUTPUT/PWM/etc
-    private final int REPORT_VERSION = 0xF9; // report firmware version
+    /**
+     * Send/receive data for a digital port. The MIDI channel contains the port. Two byte-arguments
+     * are provided, containing respectively the LSB (bits 0-6) and the MSB (bits 7-13) of the
+     * value.
+     */
+    private final int DIGITAL_MESSAGE = 0x90;
+    /**
+     * Receive data for an analog pin or sent data to a PWM pin. The MIDI channel contains the pin
+     * number. Two byte-arguments are provided, containing respectively the LSB (bits 0-6) and the
+     * MSB (bits 7-13) of the value.
+     */
+    private final int ANALOG_MESSAGE = 0xE0;
+    /**
+     * Enable/disable analog input from a pin. The MIDI channel contains the pin number. The
+     * additional one-byte argument indicates whether to disable (0) or enable (1).
+     */
+    private final int REPORT_ANALOG = 0xC0;
+    /**
+     * Enable/disable digital input from a port. The MIDI channel contains the port. The additional
+     * one-byte argument indicates whether to disable (0) or enable (1).
+     */
+    private final int REPORT_DIGITAL = 0xD0;
+    /**
+     * Used to set a pin to a specific mode. The MIDI channel is not present. Two one-byte arguments
+     * are provided, containing respectively the pin number and the pin mode.
+     */
+    private final int SET_PIN_MODE = 0xF4;
+    /**
+     * Reports the firmware version. Two one-byte arguments are provided, containing respectively
+     * the major and the minor version numbers.
+     */
+    private final int REPORT_VERSION = 0xF9;
+    /**
+     * Issues a soft reset. No MIDI channel and no arguments.
+     */
     @SuppressWarnings("unused")
-    private final int SYSTEM_RESET = 0xFF; // reset from MIDI
+    private final int SYSTEM_RESET = 0xFF;
+    /**
+     * Starts a MIDI SysEx message. No MIDI channel and no arguments.
+     */
     @SuppressWarnings("unused")
-    private final int START_SYSEX = 0xF0; // start a MIDI SysEx message
-    private final int END_SYSEX = 0xF7; // end a MIDI SysEx message
+    private final int START_SYSEX = 0xF0;
+    /**
+     * Ends a MIDI SysEx message. No MIDI channel and no arguments.
+     */
+    private final int END_SYSEX = 0xF7;
 
     private Serial serial = null;
     private SerialProxy serialProxy = null;
+
+    private final int MAX_DATA_BYTES = 32;
 
     private int waitForData = 0;
     private int executeMultiByteCommand = 0;
