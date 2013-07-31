@@ -94,28 +94,28 @@ public class Arduino
     private final int START_SYSEX = 0xF0; // start a MIDI SysEx message
     private final int END_SYSEX = 0xF7; // end a MIDI SysEx message
 
-    Serial serial;
-    SerialProxy serialProxy;
+    private Serial serial = null;
+    private SerialProxy serialProxy = null;
 
-    int waitForData = 0;
-    int executeMultiByteCommand = 0;
-    int multiByteChannel = 0;
-    int[] storedInputData = new int[MAX_DATA_BYTES];
-    boolean parsingSysex;
-    int sysexBytesRead;
+    private int waitForData = 0;
+    private int executeMultiByteCommand = 0;
+    private int multiByteChannel = 0;
+    private int[] storedInputData = new int[MAX_DATA_BYTES];
+    private boolean parsingSysex = false;
+    private int sysexBytesRead = 0;
 
-    int[] digitalOutputData = {
+    private int[] digitalOutputData = {
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
-    int[] digitalInputData = {
+    private int[] digitalInputData = {
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
-    int[] analogInputData = {
+    private int[] analogInputData = {
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
 
-    int majorVersion = 0;
-    int minorVersion = 0;
+    private int majorVersion = 0;
+    private int minorVersion = 0;
 
     public class SerialProxy implements SerialPortEventListener
     {
