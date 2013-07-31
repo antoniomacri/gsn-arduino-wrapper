@@ -289,19 +289,16 @@ public class Arduino
 
     private void setDigitalInputs(int portNumber, int portData)
     {
-        // System.out.println("digital port " + portNumber + " is " + portData);
         digitalInputData[portNumber] = portData;
     }
 
     private void setAnalogInput(int pin, int value)
     {
-        // System.out.println("analog pin " + pin + " is " + value);
         analogInputData[pin] = value;
     }
 
     private void setVersion(int majorVersion, int minorVersion)
     {
-        // System.out.println("version is " + majorVersion + "." + minorVersion);
         this.majorVersion = majorVersion;
         this.minorVersion = minorVersion;
     }
