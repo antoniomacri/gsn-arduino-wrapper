@@ -31,8 +31,9 @@
 
 package gsn.wrappers.arduino;
 
-import gnu.io.SerialPortEvent;
-import gnu.io.SerialPortEventListener;
+import gnu.io.*;
+
+import java.io.IOException;
 
 /**
  * Together with the Firmata 2 firmware (an Arduino sketch uploaded to the Arduino board), this
@@ -87,7 +88,9 @@ public class Arduino
     private final int REPORT_DIGITAL = 0xD0; // enable digital input by port
     private final int SET_PIN_MODE = 0xF4; // set a pin to INPUT/OUTPUT/PWM/etc
     private final int REPORT_VERSION = 0xF9; // report firmware version
+    @SuppressWarnings("unused")
     private final int SYSTEM_RESET = 0xFF; // reset from MIDI
+    @SuppressWarnings("unused")
     private final int START_SYSEX = 0xF0; // start a MIDI SysEx message
     private final int END_SYSEX = 0xF7; // end a MIDI SysEx message
 
@@ -148,8 +151,13 @@ public class Arduino
      * @param iname
      *            the name of the serial device associated with the Arduino board (e.g. one the
      *            elements of the array returned by Arduino.list())
+     * @throws UnsupportedCommOperationException
+     * @throws IOException
+     * @throws PortInUseException
+     * @throws NoSuchPortException
      */
-    public Arduino(String iname)
+    public Arduino(String iname) throws NoSuchPortException, PortInUseException, IOException,
+            UnsupportedCommOperationException
     {
         this(iname, 57600);
     }
@@ -166,8 +174,13 @@ public class Arduino
      *            the baud rate to use to communicate with the Arduino board (the firmata library
      *            defaults to 57600, and the examples use this rate, but other firmwares may
      *            override it)
+     * @throws UnsupportedCommOperationException
+     * @throws IOException
+     * @throws PortInUseException
+     * @throws NoSuchPortException
      */
-    public Arduino(String iname, int irate)
+    public Arduino(String iname, int irate) throws NoSuchPortException, PortInUseException, IOException,
+            UnsupportedCommOperationException
     {
         this.serialProxy = new SerialProxy();
         this.serial = new Serial(serialProxy, iname, irate);
@@ -187,6 +200,11 @@ public class Arduino
             serial.write(REPORT_DIGITAL | i);
             serial.write(1);
         }
+    }
+
+    public String getSerialName()
+    {
+        return serial == null ? null : serial.getName();
     }
 
     /**
@@ -219,8 +237,9 @@ public class Arduino
      *            the pin whose mode to set (from 2 to 13)
      * @param mode
      *            either Arduino.INPUT or Arduino.OUTPUT
+     * @throws IOException
      */
-    public void pinMode(int pin, int mode)
+    public void pinMode(int pin, int mode) throws IOException
     {
         serial.write(SET_PIN_MODE);
         serial.write(pin);
@@ -234,8 +253,9 @@ public class Arduino
      *            the pin to write to (from 2 to 13)
      * @param value
      *            the value to write: Arduino.LOW (0 volts) or Arduino.HIGH (5 volts)
+     * @throws IOException
      */
-    public void digitalWrite(int pin, int value)
+    public void digitalWrite(int pin, int value) throws IOException
     {
         int portNumber = (pin >> 3) & 0x0F;
 
@@ -257,8 +277,9 @@ public class Arduino
      *            support hardware pwm)
      * @param the
      *            value: 0 being the lowest (always off), and 255 the highest (always on)
+     * @throws IOException
      */
-    public void analogWrite(int pin, int value)
+    public void analogWrite(int pin, int value) throws IOException
     {
         pinMode(pin, PWM);
         serial.write(ANALOG_MESSAGE | (pin & 0x0F));
