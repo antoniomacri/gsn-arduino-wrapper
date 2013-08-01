@@ -134,7 +134,8 @@ public class Arduino
     private int majorVersion = 0;
     private int minorVersion = 0;
 
-    public class SerialProxy implements SerialPortEventListener
+    // Use an inner class just to avoid having serialEvent() as a public method.
+    private class SerialProxy implements SerialPortEventListener
     {
         @Override
         public void serialEvent(SerialPortEvent arg)
