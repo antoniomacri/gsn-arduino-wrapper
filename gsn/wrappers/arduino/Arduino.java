@@ -63,6 +63,35 @@ public class Arduino
     public static final int HIGH = 1;
 
     /**
+     * Represents an exception occurred while opening the connection to the Arduino board.
+     *
+     * This exception is intended to be generic, in order to abstract from implementation details
+     * and from the specific interface used (serial port, XBee, Bluetooth, etc).
+     */
+    @SuppressWarnings("serial")
+    public static class ArduinoConnectionException extends Exception
+    {
+        public ArduinoConnectionException()
+        {
+        }
+
+        public ArduinoConnectionException(String message)
+        {
+            super(message);
+        }
+
+        public ArduinoConnectionException(Throwable cause)
+        {
+            super(cause);
+        }
+
+        public ArduinoConnectionException(String message, Throwable cause)
+        {
+            super(message, cause);
+        }
+    }
+
+    /**
      * The default baud rate used to communicate with the Arduino board. This must match the baud
      * rate used by the sketch. StandardFirmata uses 57600, but other firmwares may override it.
      */
@@ -176,13 +205,12 @@ public class Arduino
      * @param iname
      *            the name of the serial device associated with the Arduino board (e.g. one the
      *            elements of the array returned by Arduino.list())
-     * @throws UnsupportedCommOperationException
-     * @throws IOException
-     * @throws PortInUseException
-     * @throws NoSuchPortException
+     *
+     * @throws ArduinoConnectionException
+     *             an exception occurred while trying to open the communication with Arduino. See
+     *             inner exception for more information
      */
-    public Arduino(String iname) throws NoSuchPortException, PortInUseException, IOException,
-            UnsupportedCommOperationException
+    public Arduino(String iname) throws ArduinoConnectionException
     {
         this(iname, DEFAULT_RATE);
     }
@@ -199,16 +227,20 @@ public class Arduino
      *            the baud rate to use to communicate with the Arduino board (the firmata library
      *            defaults to 57600, and the examples use this rate, but other firmwares may
      *            override it)
-     * @throws UnsupportedCommOperationException
-     * @throws IOException
-     * @throws PortInUseException
-     * @throws NoSuchPortException
+     *
+     * @throws ArduinoConnectionException
+     *             an exception occurred while trying to open the communication with Arduino. See
+     *             inner exception for more information
      */
-    public Arduino(String iname, int irate) throws NoSuchPortException, PortInUseException, IOException,
-            UnsupportedCommOperationException
+    public Arduino(String iname, int irate) throws ArduinoConnectionException
     {
         this.serialProxy = new SerialProxy();
-        this.serial = new Serial(serialProxy, iname, irate);
+        try {
+            this.serial = new Serial(serialProxy, iname, irate);
+        }
+        catch (Exception e) {
+            throw new ArduinoConnectionException("An error occurred while instantiating the Serial object.", e);
+        }
 
         try {
             Thread.sleep(3000);
@@ -216,14 +248,21 @@ public class Arduino
         catch (InterruptedException e) {
         }
 
-        for (int i = 0; i < 6; i++) {
-            serial.write(REPORT_ANALOG | i);
-            serial.write(1);
-        }
+        try {
+            for (int i = 0; i < 6; i++) {
+                serial.write(REPORT_ANALOG | i);
+                serial.write(1);
+            }
 
-        for (int i = 0; i < 2; i++) {
-            serial.write(REPORT_DIGITAL | i);
-            serial.write(1);
+            for (int i = 0; i < 2; i++) {
+                serial.write(REPORT_DIGITAL | i);
+                serial.write(1);
+            }
+        }
+        catch (IOException e) {
+            serial.dispose();
+            serial = null;
+            throw new ArduinoConnectionException("An error occurred while initializing Arduino.", e);
         }
     }
 

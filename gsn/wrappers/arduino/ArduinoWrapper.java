@@ -5,13 +5,11 @@ import java.io.Serializable;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import gnu.io.NoSuchPortException;
-import gnu.io.PortInUseException;
-import gnu.io.UnsupportedCommOperationException;
 import gsn.beans.AddressBean;
 import gsn.beans.DataField;
 import gsn.beans.StreamElement;
 import gsn.wrappers.AbstractWrapper;
+import gsn.wrappers.arduino.Arduino.ArduinoConnectionException;
 
 /**
  * This wrapper allows to read data from various sensors on an Arduino board.
@@ -73,7 +71,7 @@ public class ArduinoWrapper extends AbstractWrapper
                 try {
                     arduino = new Arduino(list[0], 57600);
                 }
-                catch (NoSuchPortException | PortInUseException | IOException | UnsupportedCommOperationException e) {
+                catch (ArduinoConnectionException e) {
                     logger.error("An error occurred while instantiating Arduino.", e);
                     return false;
                 }
