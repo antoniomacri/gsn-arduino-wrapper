@@ -63,6 +63,12 @@ public class Arduino
     public static final int HIGH = 1;
 
     /**
+     * The default baud rate used to communicate with the Arduino board. This must match the baud
+     * rate used by the sketch. StandardFirmata uses 57600, but other firmwares may override it.
+     */
+    private static final int DEFAULT_RATE = 57600;
+
+    /**
      * Send/receive data for a digital port. The MIDI channel contains the port. Two byte-arguments
      * are provided, containing respectively the LSB (bits 0-6) and the MSB (bits 7-13) of the
      * value.
@@ -178,7 +184,7 @@ public class Arduino
     public Arduino(String iname) throws NoSuchPortException, PortInUseException, IOException,
             UnsupportedCommOperationException
     {
-        this(iname, 57600);
+        this(iname, DEFAULT_RATE);
     }
 
     /**
