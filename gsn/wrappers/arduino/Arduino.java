@@ -34,6 +34,7 @@ package gsn.wrappers.arduino;
 import gnu.io.*;
 
 import java.io.IOException;
+import java.util.Vector;
 
 /**
  * Implements a proxy which allows to control an Arduino board from Java.
@@ -171,6 +172,14 @@ public class Arduino
     private int protocolMajorVersion = 0;
     private int protocolMinorVersion = 0;
 
+    /**
+     * Used to check if the Firmata version implemented in the sketch is supported by this proxy.
+     */
+    private static boolean isFirmataVersionSupported(int major, int minor)
+    {
+        return major == 2;
+    }
+
     // Use an inner class just to avoid having serialEvent() as a public method.
     private class SerialProxy implements SerialPortEventListener
     {
@@ -192,13 +201,30 @@ public class Arduino
     }
 
     /**
-     * Gets a list of the available Arduino boards.
+     * Gets a list of the available and supported Arduino boards.
      *
-     * Currently, it returns all serial devices, i.e. the same as Serial.list().
+     * It returns serial devices which implement a supported Firmata protocol version.
      */
     public static String[] list()
     {
-        return Serial.list();
+        Vector<String> list = new Vector<String>();
+        for (String s : Serial.list()) {
+            Arduino arduino = null;
+            try {
+                arduino = new Arduino(s);
+                if (isFirmataVersionSupported(arduino.protocolMajorVersion, arduino.protocolMinorVersion)) {
+                    list.add(s);
+                }
+            }
+            catch (Throwable e) {
+            }
+            finally {
+                if (arduino != null) {
+                    arduino.dispose();
+                }
+            }
+        }
+        return list.toArray(new String[list.size()]);
     }
 
     /**
