@@ -131,8 +131,9 @@ public class Arduino
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
 
-    private int majorVersion = 0;
-    private int minorVersion = 0;
+    // Firmata protocol version implemented in Arduino's sketch
+    private int protocolMajorVersion = 0;
+    private int protocolMinorVersion = 0;
 
     // Use an inner class just to avoid having serialEvent() as a public method.
     private class SerialProxy implements SerialPortEventListener
@@ -218,6 +219,22 @@ public class Arduino
             serial.write(REPORT_DIGITAL | i);
             serial.write(1);
         }
+    }
+
+    /**
+     * Gets the major version number of the Firmata protocol implemented in the sketch.
+     */
+    public int getProtocolMajorVersion()
+    {
+        return protocolMajorVersion;
+    }
+
+    /**
+     * Gets the minor version number of the Firmata protocol implemented in the sketch.
+     */
+    public int getProtocolMinorVersion()
+    {
+        return protocolMinorVersion;
     }
 
     public String getSerialName()
@@ -317,8 +334,8 @@ public class Arduino
 
     private void setVersion(int majorVersion, int minorVersion)
     {
-        this.majorVersion = majorVersion;
-        this.minorVersion = minorVersion;
+        this.protocolMajorVersion = majorVersion;
+        this.protocolMinorVersion = minorVersion;
     }
 
     private int available()
