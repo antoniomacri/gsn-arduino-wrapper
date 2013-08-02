@@ -36,9 +36,10 @@ import gnu.io.*;
 import java.io.IOException;
 
 /**
- * Together with the Firmata 2 firmware (an Arduino sketch uploaded to the Arduino board), this
- * class allows you to control the Arduino board from Processing: reading from and writing to the
- * digital pins and reading the analog inputs.
+ * Implements a proxy which allows to control an Arduino board from Java.
+ *
+ * After installing a Firmata 2 firmware on the Arduino board, this class can be used to read from
+ * and write to the digital pins and read the analog inputs.
  */
 public class Arduino
 {
@@ -182,14 +183,18 @@ public class Arduino
         }
     }
 
+    /**
+     * Closes the serial port.
+     */
     public void dispose()
     {
         this.serial.dispose();
     }
 
     /**
-     * Get a list of the available Arduino boards; currently all serial devices (i.e. the same as
-     * Serial.list()). In theory, this should figure out what's an Arduino board and what's not.
+     * Gets a list of the available Arduino boards.
+     *
+     * Currently, it returns all serial devices, i.e. the same as Serial.list().
      */
     public static String[] list()
     {
@@ -197,14 +202,12 @@ public class Arduino
     }
 
     /**
-     * Create a proxy to an Arduino board running the Firmata 2 firmware at the default baud rate of
-     * 57600.
+     * Creates a proxy to an Arduino board running the Firmata 2 firmware, using the default baud
+     * rate of 57600.
      *
-     * @param parent
-     *            the Processing sketch creating this Arduino board (i.e. "this").
      * @param iname
-     *            the name of the serial device associated with the Arduino board (e.g. one the
-     *            elements of the array returned by Arduino.list())
+     *            the name of the serial interface associated with the Arduino board (for example,
+     *            one of those returned by Arduino.list())
      *
      * @throws ArduinoConnectionException
      *             an exception occurred while trying to open the communication with Arduino. See
@@ -216,27 +219,24 @@ public class Arduino
     }
 
     /**
-     * Create a proxy to an Arduino board running the Firmata 2 firmware.
+     * Creates a proxy to an Arduino board running the Firmata 2 firmware.
      *
-     * @param parent
-     *            the Processing sketch creating this Arduino board (i.e. "this").
      * @param iname
-     *            the name of the serial device associated with the Arduino board (e.g. one the
-     *            elements of the array returned by Arduino.list())
-     * @param irate
-     *            the baud rate to use to communicate with the Arduino board (the firmata library
-     *            defaults to 57600, and the examples use this rate, but other firmwares may
-     *            override it)
+     *            the name of the serial interface associated with the Arduino board (for example,
+     *            one of those returned by Arduino.list())
+     * @param baudrate
+     *            the baud rate to use to communicate with the Arduino board (it must match the baud
+     *            rate used by the sketch)
      *
      * @throws ArduinoConnectionException
      *             an exception occurred while trying to open the communication with Arduino. See
      *             inner exception for more information
      */
-    public Arduino(String iname, int irate) throws ArduinoConnectionException
+    public Arduino(String iname, int baudrate) throws ArduinoConnectionException
     {
         this.serialProxy = new SerialProxy();
         try {
-            this.serial = new Serial(serialProxy, iname, irate);
+            this.serial = new Serial(serialProxy, iname, baudrate);
         }
         catch (Exception e) {
             throw new ArduinoConnectionException("An error occurred while instantiating the Serial object.", e);
@@ -282,17 +282,21 @@ public class Arduino
         return protocolMinorVersion;
     }
 
+    /**
+     * Gets the name of the serial interface.
+     */
     public String getSerialName()
     {
         return serial == null ? null : serial.getName();
     }
 
     /**
-     * Returns the last known value read from the digital pin: HIGH or LOW.
+     * Gets the last known value read from a digital pin.
      *
      * @param pin
-     *            the digital pin whose value should be returned (from 2 to 13, since pins 0 and 1
-     *            are used for serial communication)
+     *            the digital pin whose value should be returned
+     *
+     * @return Arduino.LOW or Arduino.HIGH
      */
     public int digitalRead(int pin)
     {
@@ -300,10 +304,12 @@ public class Arduino
     }
 
     /**
-     * Returns the last known value read from the analog pin: 0 (0 volts) to 1023 (5 volts).
+     * Gets the last known value read from an analog pin.
      *
      * @param pin
-     *            the analog pin whose value should be returned (from 0 to 5)
+     *            the analog pin whose value should be returned
+     *
+     * @return an integer between 0 (0 volts) and 1023 (5 volts)
      */
     public int analogRead(int pin)
     {
@@ -311,13 +317,15 @@ public class Arduino
     }
 
     /**
-     * Set a digital pin to input or output mode.
+     * Sets a digital pin to input or output mode.
      *
      * @param pin
-     *            the pin whose mode to set (from 2 to 13)
+     *            the pin whose mode is to be set
      * @param mode
      *            either Arduino.INPUT or Arduino.OUTPUT
+     *
      * @throws IOException
+     *             if an I/O error occurs
      */
     public void pinMode(int pin, int mode) throws IOException
     {
@@ -327,13 +335,15 @@ public class Arduino
     }
 
     /**
-     * Write to a digital pin (the pin must have been put into output mode with pinMode()).
+     * Writes to a digital pin that has been toggled to output mode.
      *
      * @param pin
-     *            the pin to write to (from 2 to 13)
+     *            the digital pin to write to
      * @param value
-     *            the value to write: Arduino.LOW (0 volts) or Arduino.HIGH (5 volts)
+     *            the value to write, either Arduino.LOW or Arduino.HIGH
+     *
      * @throws IOException
+     *             if an I/O error occurs
      */
     public void digitalWrite(int pin, int value) throws IOException
     {
@@ -350,14 +360,15 @@ public class Arduino
     }
 
     /**
-     * Write an analog value (PWM-wave) to a digital pin.
+     * Writes an analog value (PWM-wave) to a digital pin.
      *
      * @param pin
-     *            the pin to write to (must be 9, 10, or 11, as those are they only ones which
-     *            support hardware pwm)
-     * @param the
-     *            value: 0 being the lowest (always off), and 255 the highest (always on)
+     *            the digital pin to write to (it must support hardware PWM)
+     * @param value
+     *            the PWM frequency, from 0 (always off) to 255 (always on)
+     *
      * @throws IOException
+     *             if an I/O error occurs
      */
     public void analogWrite(int pin, int value) throws IOException
     {
