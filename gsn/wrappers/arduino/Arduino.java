@@ -65,6 +65,33 @@ public class Arduino
     public static final int HIGH = 1;
 
     /**
+     * Gets a list of the available Arduino boards.
+     *
+     * It returns all serial devices which implement a supported Firmata protocol version.
+     */
+    public static String[] list()
+    {
+        Vector<String> list = new Vector<String>();
+        for (String s : Serial.list()) {
+            Arduino arduino = null;
+            try {
+                arduino = new Arduino(s);
+                if (isFirmataVersionSupported(arduino.protocolMajorVersion, arduino.protocolMinorVersion)) {
+                    list.add(s);
+                }
+            }
+            catch (Throwable e) {
+            }
+            finally {
+                if (arduino != null) {
+                    arduino.dispose();
+                }
+            }
+        }
+        return list.toArray(new String[list.size()]);
+    }
+
+    /**
      * Represents an exception occurred while opening the connection to the Arduino board.
      *
      * This exception is intended to be generic, in order to abstract from implementation details
@@ -146,18 +173,18 @@ public class Arduino
      */
     private static final int END_SYSEX = 0xF7;
 
+    // The maximum number of bytes which can be received in a single command
+    private static final int MAX_DATA_BYTES = 32;
+
+    // Instance variables
     private Serial serial = null;
     private SerialProxy serialProxy = null;
-
-    private final int MAX_DATA_BYTES = 32;
-
     private int waitForData = 0;
     private int executeMultiByteCommand = 0;
     private int multiByteChannel = 0;
     private int[] storedInputData = new int[MAX_DATA_BYTES];
     private boolean parsingSysex = false;
     private int sysexBytesRead = 0;
-
     private int[] digitalOutputData = {
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
@@ -190,41 +217,6 @@ public class Arduino
             while (available() > 0)
                 processInput();
         }
-    }
-
-    /**
-     * Closes the serial port.
-     */
-    public void dispose()
-    {
-        this.serial.dispose();
-    }
-
-    /**
-     * Gets a list of the available and supported Arduino boards.
-     *
-     * It returns serial devices which implement a supported Firmata protocol version.
-     */
-    public static String[] list()
-    {
-        Vector<String> list = new Vector<String>();
-        for (String s : Serial.list()) {
-            Arduino arduino = null;
-            try {
-                arduino = new Arduino(s);
-                if (isFirmataVersionSupported(arduino.protocolMajorVersion, arduino.protocolMinorVersion)) {
-                    list.add(s);
-                }
-            }
-            catch (Throwable e) {
-            }
-            finally {
-                if (arduino != null) {
-                    arduino.dispose();
-                }
-            }
-        }
-        return list.toArray(new String[list.size()]);
     }
 
     /**
@@ -290,6 +282,14 @@ public class Arduino
             serial = null;
             throw new ArduinoConnectionException("An error occurred while initializing Arduino.", e);
         }
+    }
+
+    /**
+     * Closes the serial port.
+     */
+    public void dispose()
+    {
+        this.serial.dispose();
     }
 
     /**
