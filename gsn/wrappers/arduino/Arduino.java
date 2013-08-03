@@ -76,6 +76,8 @@ public class Arduino
             Arduino arduino = null;
             try {
                 arduino = new Arduino(s);
+                // Wait a little to get protocol major/minor version
+                arduino.getProcotolVersionString(1000);
                 if (isFirmataVersionSupported(arduino.protocolMajorVersion, arduino.protocolMinorVersion)) {
                     list.add(s);
                 }
@@ -309,6 +311,28 @@ public class Arduino
     }
 
     /**
+     * Gets the version of the Firmata protocol implemented in the sketch as a string.
+     *
+     * @param timeout
+     *            the maximum time to wait (in milliseconds) to receive the protocol version from
+     *            the Arduino board
+     *
+     * @return a String in the form "majorVersion.minorVersion" (for example "2.3")
+     */
+    public String getProcotolVersionString(int timeout)
+    {
+        final int step = 100, loops = (int) Math.ceil(timeout / (double) step);
+        for (int i = 0; i < loops && protocolMajorVersion == 0; i++) {
+            try {
+                Thread.sleep(step);
+            }
+            catch (InterruptedException e) {
+            }
+        }
+        return protocolMajorVersion + "." + protocolMinorVersion;
+    }
+
+    /**
      * Gets the name of the serial interface.
      */
     public String getSerialName()
@@ -416,8 +440,11 @@ public class Arduino
 
     private void setVersion(int majorVersion, int minorVersion)
     {
-        this.protocolMajorVersion = majorVersion;
+        // getProcotolVersionString() tests protocolMajorVersion == 0 to determine if
+        // the protocol version has been received. So set the protocolMinorVersion first
+        // (it is not essential, but...)
         this.protocolMinorVersion = minorVersion;
+        this.protocolMajorVersion = majorVersion;
     }
 
     private int available()

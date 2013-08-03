@@ -75,7 +75,8 @@ public class ArduinoWrapper extends AbstractWrapper
                     logger.error("An error occurred while instantiating Arduino.", e);
                     return false;
                 }
-                logger.debug("Arduino instantiated on port " + list[0] + ".");
+                logger.debug(String.format("Arduino (Firmata v%s) instantiated on port %s.",
+                        arduino.getProcotolVersionString(1000), arduino.getSerialName()));
             }
 
             totalThreads++;
