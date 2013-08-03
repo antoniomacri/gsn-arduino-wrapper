@@ -1,5 +1,5 @@
 /*
-  Serial communication
+  Serial.java - Communication over a serial port
 
   The original code of this library is part of the Processing
   project (see http://processing.org). You can obtain it from
@@ -9,9 +9,8 @@
   Here, it has been detached from Processing and adapted to a
   more general usage.
 
-  Copyright (c) 2013 Antonio Macrì <ing.antonio.macri@gmail.com>
-
   Copyright (c) 2004-05 Ben Fry & Casey Reas
+  Copyright (c) 2013 Antonio Macrì <ing.antonio.macri@gmail.com>
 
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License
