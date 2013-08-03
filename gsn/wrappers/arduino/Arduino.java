@@ -196,6 +196,7 @@ public class Arduino
     private int[] analogInputData = {
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
+    private long lastTimestamp = 0;
 
     // Firmata protocol version implemented in Arduino's sketch
     private int protocolMajorVersion = 0;
@@ -431,11 +432,15 @@ public class Arduino
     private void setDigitalInputs(int portNumber, int portData)
     {
         digitalInputData[portNumber] = portData;
+        // currentTimeMillis() seems sufficiently quick
+        lastTimestamp = System.currentTimeMillis();
     }
 
     private void setAnalogInput(int pin, int value)
     {
         analogInputData[pin] = value;
+        // currentTimeMillis() seems sufficiently quick
+        lastTimestamp = System.currentTimeMillis();
     }
 
     private void setVersion(int majorVersion, int minorVersion)
@@ -504,5 +509,13 @@ public class Arduino
                 break;
             }
         }
+    }
+
+    /**
+     * Gets a value indicating whether any data was read from Arduino in the last second.
+     */
+    public boolean isReporting()
+    {
+        return lastTimestamp > System.currentTimeMillis() - 1000;
     }
 }

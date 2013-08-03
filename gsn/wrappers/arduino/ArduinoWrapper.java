@@ -1,3 +1,24 @@
+/*
+  ArduinoWrapper.java - A GSN wrapper for Arduino
+
+  Copyright (c) 2013 Antonio Macrì <ing.antonio.macri@gmail.com>
+
+  This program is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License
+  as published by the Free Software Foundation; either version 2
+  of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+  02110-1301, USA.
+*/
+
 package gsn.wrappers.arduino;
 
 import java.io.IOException;
@@ -12,21 +33,22 @@ import gsn.wrappers.AbstractWrapper;
 import gsn.wrappers.arduino.Arduino.ArduinoConnectionException;
 
 /**
- * This wrapper allows to read data from various sensors on an Arduino board.
+ * ArduinoWrapper allows to read data from various sensors on an Arduino board.
+ *
+ * This wrapper produces a sequence of StreamElements containing a single integer value, using a
+ * configurable rate. Each value is retrieved from the attached Arduino board reading from a given
+ * pin with the specified mode (analog or digital). All parameters (pin, mode, rate) are obtained
+ * from the associated virtual sensor.
  */
 public class ArduinoWrapper extends AbstractWrapper
 {
     private static Object lock = new Object();
-    private static Arduino arduino; // TODO: volatile?
+    private static Arduino arduino;
     private static int totalThreads;
     private static int activeThreads;
 
     private enum Mode {
         ANALOG, DIGITAL
-    }
-
-    private enum Trigger {
-        TIMER, DATA
     }
 
     private final transient Logger logger = Logger.getLogger(ArduinoWrapper.class);
@@ -35,9 +57,13 @@ public class ArduinoWrapper extends AbstractWrapper
 
     private int rate = 1000;
     private Mode mode;
-    private Trigger trigger;
     private int pin;
 
+    /**
+     * Initializes this instance of the wrapper reading parameters from the associated virtual
+     * sensor, creating an Arduino instance (if not already done), and configuring the specified
+     * pin.
+     */
     @Override
     public boolean initialize()
     {
@@ -55,13 +81,13 @@ public class ArduinoWrapper extends AbstractWrapper
         }
         catch (Throwable e) {
             logger.error("Cannot read parameters from VSD file.", e);
-            // Note that initialization will be retried every 3 seconds
+            // Notice that initialization will be retried every 3 seconds
             return false;
         }
 
         // Instantiate Arduino
         synchronized (lock) {
-            if (arduino == null) {
+            if (activeThreads == 0) {
                 String[] list = Arduino.list();
                 if (list.length <= 0) {
                     logger.error("No Arduino connected.");
@@ -110,31 +136,20 @@ public class ArduinoWrapper extends AbstractWrapper
     {
         pin = params.getPredicateValueAsIntWithException("pin");
 
-        String value = params.getPredicateValueWithDefault("trigger", Trigger.TIMER.name());
-        trigger = getEnumFromString(Trigger.class, value, "trigger");
-
-        value = params.getPredicateValue("rate");
+        String value = params.getPredicateValue("rate");
         if (value != null) {
-            if (trigger == Trigger.DATA) {
-                logger.warn("Parameter 'rate' is ignored if 'trigger' is 'data'.");
-            }
-            else {
-                rate = Integer.parseInt(value);
-            }
+            rate = Integer.parseInt(value);
         }
 
-        value = params.getPredicateValueWithDefault("mode",
-                (trigger == Trigger.DATA ? Mode.DIGITAL : Mode.ANALOG).name());
+        value = params.getPredicateValueWithDefault("mode", Mode.ANALOG.name());
         mode = getEnumFromString(Mode.class, value, "mode");
-
-        if (trigger == Trigger.DATA && mode != Mode.DIGITAL) {
-            logger.error("Invalid parameter: 'trigger=data' is supported only with 'mode=digital'.");
-            return false;
-        }
 
         return true;
     }
 
+    /**
+     * Periodically reads a value from the Arduino and posts it to GSN.
+     */
     @Override
     public void run()
     {
@@ -146,16 +161,22 @@ public class ArduinoWrapper extends AbstractWrapper
                 logger.error(e.getMessage(), e);
             }
 
-            // read value from the specified pin
+            // Read a value from the specified pin
             int value;
-            if (mode == Mode.DIGITAL) {
-                value = arduino.digitalRead(pin);
+            if (arduino.isReporting()) {
+                if (mode == Mode.DIGITAL) {
+                    value = arduino.digitalRead(pin);
+                }
+                else {
+                    value = arduino.analogRead(pin);
+                }
             }
             else {
-                value = arduino.analogRead(pin);
+                logger.error("Arduino is not connected.");
+                return;
             }
 
-            // post the data to GSN
+            // Post the data to GSN
             StreamElement se = new StreamElement(getOutputFormat(), new Serializable[] {
                 value
             }, System.currentTimeMillis());
