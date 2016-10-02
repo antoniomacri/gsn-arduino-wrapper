@@ -1,0 +1,12 @@
+General:
+ - Supporto a più Arduino
+ - Prelevare dati in modo data-driven
+
+Serial.java
+ - dispose(): catch everything? print to stdout or log?
+
+Arduino.java
+
+ArduinoWrapper.java
+  Un'altro parametro per il baud rate
+
